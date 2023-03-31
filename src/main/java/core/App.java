@@ -14,7 +14,20 @@ public class App {
 
 
     public static void main(String[] args)  {
-        distanceMatrices();
+        //distanceMatrices();
+        mergeExperimenterArffResults();
+    }
+
+    private static void mergeExperimenterArffResults() {
+        try {
+            Instances mergedInstances = ArffUtil.mergeArffFiles(FilePaths.ExplorerResults.PROVA_1, FilePaths.ExplorerResults.PROVA_4);
+            ArffUtil.exportToArff(mergedInstances, "merged-"+new Date());
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("IO exception");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private static void distanceMatrices() {
