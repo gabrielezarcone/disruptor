@@ -4,16 +4,10 @@ import costants.FilePaths;
 import filters.ApplyFilter;
 import lombok.NonNull;
 import weka.core.Attribute;
-import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.converters.ArffSaver;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.io.*;
 import java.util.Enumeration;
 
 public class ArffUtil {
@@ -26,9 +20,28 @@ public class ArffUtil {
      */
     private static Instances readArffFile(String filePath) throws IOException {
         BufferedReader bufferedReader = new BufferedReader(new FileReader(filePath));
+        return readArffFile(bufferedReader);
+    }
+    /**
+     * Return a {@link Instances} object from a .arff file
+     * @param file the .arff source file
+     * @return {@link Instances} object based on an .arff file
+     * @throws IOException if problems fetching the file
+     */
+    public static Instances readArffFile(File file) throws IOException {
+        BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
+        return readArffFile(bufferedReader);
+    }
 
-        Instances dataset = new Instances(bufferedReader);
-        bufferedReader.close();
+    /**
+     * Return a {@link Instances} object from a .arff file
+     * @param reader Reader of the .arff source file
+     * @return {@link Instances} object based on an .arff file
+     * @throws IOException if problems fetching the file
+     */
+    private static Instances readArffFile(Reader reader) throws IOException {
+        Instances dataset = new Instances(reader);
+        reader.close();
         return dataset;
     }
 
@@ -47,6 +60,23 @@ public class ArffUtil {
 
 
         return dataset;
+    }
+
+    /**
+     *
+     * @param file1
+     * @param file2
+     * @return
+     * @throws Exception
+     */
+    public static Instances mergeArffFiles(File file1, File file2) throws Exception {
+        // read the two files
+        @NonNull
+        Instances instances1 = readArffFile(file1);
+        @NonNull
+        Instances instantces2 = readArffFile(file2);
+
+        return mergeInstances(instances1, instantces2);
     }
 
     /**
@@ -92,6 +122,11 @@ public class ArffUtil {
         biggerInstances = addAllMissingAttributes(biggerInstances, smallerInstances);
         smallerInstances = addAllMissingAttributes(smallerInstances, biggerInstances);
 
+        // Values of nominal attributes are sorted because they are positional
+        // and so, same values should be in the same position in corresponding attributes
+        biggerInstances = ApplyFilter.sortLabels(biggerInstances);
+        smallerInstances = ApplyFilter.sortLabels(smallerInstances);
+
         // add all instances of smallerInstances into biggerInstances
         Instances mergedInstances = biggerInstances;
         InstancesUtil.addAllInstances(mergedInstances, smallerInstances);
@@ -112,6 +147,11 @@ public class ArffUtil {
      * @throws Exception if problems with the merging of nominal attributes values
      */
     private static Instances addAllMissingAttributes(Instances destinationInstances, Instances sourceInsances) throws Exception {
+
+        // Replace all the empty values in the two instances otherwise could cause problems applying the AddValues filter
+        InstancesUtil.replaceEmptyValues(destinationInstances, " ");
+        InstancesUtil.replaceEmptyValues(sourceInsances, " ");
+
         Enumeration<Attribute> sourceAttributesEnumeration = sourceInsances.enumerateAttributes();
         while(sourceAttributesEnumeration.hasMoreElements()){
             Attribute currentSourceAttribute = sourceAttributesEnumeration.nextElement();
@@ -148,9 +188,23 @@ public class ArffUtil {
      * @throws IOException if problem during the export
      */
     public static void exportToArff(Instances instances, String outputFilename) throws IOException {
+        exportToArff(instances, FilePaths.OUTPUT_FOLDER, outputFilename);
+    }
+
+    /**
+     * Export the {@link Instances} object specified in instances as a .arff file.
+     * <p/>
+     * The output destination is specified by the constant {@link FilePaths}.OUTPUT_FOLDER
+     * <p/>
+     * @param instances {@link Instances} object to export
+     * @param outputDirectoryPath path of the output directory. this
+     * @param outputFilename filename of the exported file
+     * @throws IOException if problem during the export
+     */
+    public static void exportToArff(Instances instances, String outputDirectoryPath, String outputFilename) throws IOException {
         ArffSaver saver = new ArffSaver();
         saver.setInstances(instances);
-        saver.setFile(new File( FilePaths.OUTPUT_FOLDER + outputFilename + ".arff"));
+        saver.setFile(new File( outputDirectoryPath + outputFilename + ".arff") );
         saver.writeBatch();
     }
 

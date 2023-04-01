@@ -5,6 +5,8 @@ import weka.core.Attribute;
 import weka.core.Instances;
 import weka.filters.Filter;
 import weka.filters.unsupervised.attribute.AddValues;
+import weka.filters.unsupervised.attribute.Reorder;
+import weka.filters.unsupervised.attribute.SortLabels;
 
 public class ApplyFilter {
 
@@ -31,5 +33,40 @@ public class ApplyFilter {
 
         return  Filter.useFilter(destinationInstances, addValuesFilter);
 
+    }
+
+    /**
+     * Sort in ascending order the values (aka labels) of destinationInstances
+     * @param destinationInstances instances whose values should be sorted
+     * @return a new Instances object with the values of every attribute sorted in ascending order
+     * @throws Exception if problems applying the filter
+     */
+    public static Instances sortLabels(Instances destinationInstances) throws Exception {
+
+        SortLabels sortLabels = new SortLabels();
+        sortLabels.setInputFormat(destinationInstances);
+
+        return  Filter.useFilter(destinationInstances, sortLabels);
+
+    }
+
+    /**
+     * Reorder instances using the order specified by attributesIndices.
+     * <p/>
+     * e.g. if instances attributes are, in order, a,b,c,d and attributesIndices is [0,3,2,1],
+     * this filter returns a new {@link Instances} object with the attribute in the following order: a,d,c,b
+     * <p/>
+     *
+     * @param instances Instances whose attributes are to reorder
+     * @param attributesIndices Array of positions.
+     * @return
+     * @throws Exception if problems applying the filter
+     */
+    public static Instances reorderAttributes(Instances instances, int[] attributesIndices) throws Exception {
+        Reorder reorder = new Reorder();
+        reorder.setAttributeIndicesArray(attributesIndices);
+        reorder.setInputFormat(instances);
+
+        return Filter.useFilter(instances, reorder);
     }
 }
