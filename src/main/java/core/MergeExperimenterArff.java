@@ -1,5 +1,6 @@
 package core;
 
+import properties.versionproviders.MergeExperimenterArffVersionProvider;
 import picocli.CommandLine;
 import util.ArffUtil;
 import weka.core.Instances;
@@ -12,7 +13,7 @@ import java.util.concurrent.Callable;
 @CommandLine.Command(
         name = "merge-experimenter-arff",
         description = "\nMerge two Experimenter .arff results\n",
-        version = "1.0.1",
+        versionProvider = MergeExperimenterArffVersionProvider.class,
         // mixinStandardHelpOptions attribute adds --help and --version options
         mixinStandardHelpOptions = true
 )
