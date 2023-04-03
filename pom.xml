@@ -7,11 +7,12 @@
     <groupId>gzarcone</groupId>
     <artifactId>tesi</artifactId>
     <version>0.1.0</version>
-    <packaging>jar</packaging>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
+        <merge-experimenter-arff.version>1.0.1</merge-experimenter-arff.version>
+        <spring-boot-maven-plugin.version>2.7.10</spring-boot-maven-plugin.version>
     </properties>
 
     <dependencies>
@@ -49,5 +50,44 @@
 
     </dependencies>
 
+    <build>
+        <plugins>
+            <!-- Spring Boot Maven Plugin -->
+            <!-- used to build jar files of the specified main classes using maven -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${spring-boot-maven-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>Pack main application</id>
+                        <phase>package</phase>
+                        <configuration>
+                            <finalName>tesi</finalName>
+                            <mainClass>core.App</mainClass>
+                            <outputDirectory>target/deploy/app</outputDirectory>
+                            <classifier>${project.version}</classifier>
+                        </configuration>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>Pack MergeExperimenterArff application</id>
+                        <phase>package</phase>
+                        <configuration>
+                            <finalName>merge-experimenter-arff</finalName>
+                            <mainClass>core.MergeExperimenterArff</mainClass>
+                            <outputDirectory>target/deploy/merge-experimenter-arff</outputDirectory>
+                            <classifier>${merge-experimenter-arff.version}</classifier>
+                        </configuration>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>
