@@ -5,10 +5,7 @@ import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.Instances;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Enumeration;
+import java.util.*;
 
 public class InstancesUtil {
 
@@ -100,5 +97,19 @@ public class InstancesUtil {
             if( hasEmptyValue && (attribute.isNominal() || attribute.isString()) )
                 instances.renameAttributeValue(attribute, "", newValue);
         }
+    }
+
+    public static HashMap<Object, ArrayList<Instance>> bucketsByClass(Instances perturbedInstances) {
+        ArrayList<Object> classValuesList = Collections.list(perturbedInstances.classAttribute().enumerateValues());
+        HashMap<Object, ArrayList<Instance>> bucketsMap = new HashMap<>();
+        for( Object value : classValuesList){
+            bucketsMap.put(value, new ArrayList<>());
+        }
+        ArrayList<Instance> instancesList = Collections.list(perturbedInstances.enumerateInstances());
+        for( Instance instance : instancesList){
+            Object classValueObject = InstanceUtil.getClassValueObject(instance);
+            bucketsMap.get(classValueObject).add(instance);
+        }
+        return bucketsMap;
     }
 }
