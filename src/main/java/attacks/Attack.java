@@ -23,6 +23,13 @@ public abstract class Attack {
     private double knowledge = 0;
 
     /**
+     * Percentage of the features the attack use
+     * @return the horizontal capacity of the attack
+     */
+    @Getter
+    private double featuresSet = 0;
+
+    /**
      * instances target of the attack
      * @param target Instances target of the attack
      * @return instances target of the attack
@@ -81,6 +88,15 @@ public abstract class Attack {
         return (int) (targetDimension*getCapacity());
     }
 
+    /**
+     * Number of instances attacked
+     * @return Number of target instances specified by the capacity
+     */
+    public int featuresSetSize(){
+        int targetFeaturesNumber = getTarget().numAttributes();
+        return (int) ( targetFeaturesNumber * getFeaturesSet() );
+    }
+
 
 
     // --------------------------------------------------------------------------------------------------------
@@ -112,6 +128,20 @@ public abstract class Attack {
         }
         else {
             throw new IllegalArgumentException("The knowledge should be between 0 and 1");
+        }
+    }
+
+    /**
+     * Percentage of the features the attack use
+     * @param featuresSet of the attack. Should be between 0 and 1
+     * @throws IllegalArgumentException if featuresSet is not between 0 and 1
+     */
+    public void setFeaturesSet(double featuresSet) {
+        if(featuresSet>=0 && featuresSet<=1){
+            this.featuresSet = featuresSet;
+        }
+        else {
+            throw new IllegalArgumentException("The featuresSet should be between 0 and 1");
         }
     }
 }
