@@ -8,6 +8,8 @@ import weka.core.Instances;
 import weka.core.converters.ArffSaver;
 
 import java.io.*;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Enumeration;
 
 public class ArffUtil {
@@ -206,6 +208,43 @@ public class ArffUtil {
         saver.setInstances(instances);
         saver.setFile(new File( outputDirectoryPath + outputFilename + ".arff") );
         saver.writeBatch();
+    }
+
+
+
+    /**
+     * Export the {@link Instances} object specified in instances as a .arff file appending the today date in the specified format
+     * <p/>
+     * The output destination is specified by the constant {@link FilePaths}.OUTPUT_FOLDER
+     * <p/>
+     * @param instances {@link Instances} object to export
+     * @param dateFormatPattern format of the date to append after the outputFilename
+     * @param outputFilename filename of the exported file
+     * @throws IOException if problem during the export
+     */
+    public static void exportToArffWithDate(Instances instances, String outputFilename, String dateFormatPattern) throws IOException {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(dateFormatPattern);
+        String date = simpleDateFormat.format(new Date());
+
+        outputFilename = outputFilename + date;
+
+        exportToArff(instances, outputFilename);
+    }
+
+
+
+    /**
+     * Export the {@link Instances} object specified in instances as a .arff file appending the today date
+     * <p/>
+     * The output destination is specified by the constant {@link FilePaths}.OUTPUT_FOLDER
+     * <p/>
+     * @param instances {@link Instances} object to export
+     * @param outputFilename filename of the exported file
+     * @throws IOException if problem during the export
+     */
+    public static void exportToArffWithDate(Instances instances, String outputFilename) throws IOException {
+        String pattern = "yyyy-MM-dd HHmmss";
+        exportToArffWithDate(instances, outputFilename, pattern);
     }
 
 }
