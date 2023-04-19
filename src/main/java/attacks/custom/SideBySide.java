@@ -14,6 +14,7 @@ import weka.core.Instances;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.IntStream;
 
 public class SideBySide extends Attack {
 
@@ -70,7 +71,8 @@ public class SideBySide extends Attack {
                     //Cycle on the instances
                     // Perform the attack only in the part of the target instances specified by the capacity
                     int attackSize = attackSize()/perturbedInstances.classAttribute().numValues();
-                    for(int i = 0; i< attackSize; i++){
+
+                    IntStream.range(0, attackSize).parallel().forEach( i -> {
 
                         Instance instance = bucketList.get( i );
                         Instance referenceInstance = referenceBucketList.get( i );
@@ -78,7 +80,7 @@ public class SideBySide extends Attack {
                         attackInstance(instance, referenceInstance, worstAttribute );
 
                         bucketList.set(i, instance);
-                    }
+                    });
                 }
                 // append all the bucketList together
                 perturbedList.addAll(bucketList);
