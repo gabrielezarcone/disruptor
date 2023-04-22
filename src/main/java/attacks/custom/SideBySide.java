@@ -38,7 +38,6 @@ public class SideBySide extends Attack {
 
     @Override
     public Instances attack() {
-        // TODO bilancia le classi oppure parti dalla classe più numerosa
         Instances perturbedInstances = new Instances(getTarget());
         try {
 
