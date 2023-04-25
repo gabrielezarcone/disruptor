@@ -62,7 +62,9 @@ public class InstancesUtil {
             if(isSameAttributes){
                 
                 ArrayList<Attribute> templateAttributesList = Collections.list(template.enumerateAttributes());
+                templateAttributesList.add(template.classAttribute());
                 ArrayList<Attribute> toChangeAttributesList = Collections.list(instancesToChange.enumerateAttributes());
+                toChangeAttributesList.add(instancesToChange.classAttribute());
                 // Save where the instancesToChange attributes are in the template storing their indices
                 ArrayList<Integer> attributesIndicesForFilter = new ArrayList<>();
 
