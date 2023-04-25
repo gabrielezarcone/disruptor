@@ -24,12 +24,13 @@ public class OverlayCentroids extends Attack {
     @Getter @Setter
     private int clustersNumber = 4;
 
-    protected OverlayCentroids(Instances target) {
+    public OverlayCentroids(Instances target) {
         super(target);
     }
 
-    protected OverlayCentroids(Instances target, double capacity, double knowledge) {
+    public OverlayCentroids(Instances target, double capacity, double knowledge, int clustersNumber) {
         super(target, capacity, knowledge);
+        setClustersNumber(clustersNumber);
     }
 
     @Override

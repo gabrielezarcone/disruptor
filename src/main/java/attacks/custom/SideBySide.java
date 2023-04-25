@@ -2,7 +2,6 @@ package attacks.custom;
 
 import attacks.Attack;
 import attributeselection.InfoGainEval;
-import filters.ApplyClassBalancer;
 import lombok.Getter;
 import lombok.Setter;
 import util.InstanceUtil;
@@ -25,11 +24,11 @@ public class SideBySide extends Attack {
     @Getter @Setter
     protected double referenceClass = 0.0;
 
-    protected SideBySide(Instances target) {
+    public SideBySide(Instances target) {
         super(target);
     }
 
-    protected SideBySide(Instances target, double capacity, double knowledge) {
+    public SideBySide(Instances target, double capacity, double knowledge) {
         super(target, capacity, knowledge);
     }
 

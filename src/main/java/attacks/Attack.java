@@ -44,13 +44,12 @@ public abstract class Attack {
     // --------------------------------------------------------------------------------------------------------
 
     protected Attack(Instances target){
-        setTarget(target);
-        setCapacity(1);
-        setKnowledge(1);
+        this(target, 1, 1);
     }
 
     protected Attack(Instances target, double capacity, double knowledge){
-        setTarget(target);
+        Instances targetCopy = new Instances(target);
+        setTarget(targetCopy);
         setCapacity(capacity);
         setKnowledge(knowledge);
     }
