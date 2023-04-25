@@ -99,6 +99,21 @@ public class Exporter {
     }
 
     /**
+     * Export the {@link Instances} object specified in instances using the weka saver in the specified directory
+     * <p/>
+     * The output destination is specified by the constant {@link FilePaths}.OUTPUT_FOLDER
+     * <p/>
+     * @param instances {@link Instances} object to export
+     * @param dirName directory inside {@link FilePaths}.OUTPUT_FOLDER
+     * @param outputFilename filename of the exported file
+     * @throws IOException if problem during the export
+     */
+    public void exportInFolder(Instances instances, String dirName, String outputFilename) throws IOException {
+        String path = dirName + File.separator + outputFilename;
+        export(instances, path);
+    }
+
+    /**
      * Export the {@link Instances} object specified in instances using the weka saver appending the today date in the specified directory
      * <p/>
      * The output destination is specified by the constant {@link FilePaths}.OUTPUT_FOLDER
