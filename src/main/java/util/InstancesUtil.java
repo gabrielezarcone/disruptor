@@ -5,10 +5,7 @@ import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.Instances;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Enumeration;
+import java.util.*;
 
 public class InstancesUtil {
 
@@ -65,7 +62,9 @@ public class InstancesUtil {
             if(isSameAttributes){
                 
                 ArrayList<Attribute> templateAttributesList = Collections.list(template.enumerateAttributes());
+                templateAttributesList.add(template.classAttribute());
                 ArrayList<Attribute> toChangeAttributesList = Collections.list(instancesToChange.enumerateAttributes());
+                toChangeAttributesList.add(instancesToChange.classAttribute());
                 // Save where the instancesToChange attributes are in the template storing their indices
                 ArrayList<Integer> attributesIndicesForFilter = new ArrayList<>();
 
@@ -100,5 +99,47 @@ public class InstancesUtil {
             if( hasEmptyValue && (attribute.isNominal() || attribute.isString()) )
                 instances.renameAttributeValue(attribute, "", newValue);
         }
+    }
+
+    public static HashMap<Object, ArrayList<Instance>> bucketsByClass(Instances perturbedInstances) {
+        ArrayList<Object> classValuesList = Collections.list(perturbedInstances.classAttribute().enumerateValues());
+        HashMap<Object, ArrayList<Instance>> bucketsMap = new HashMap<>();
+        for( Object value : classValuesList){
+            bucketsMap.put(value, new ArrayList<>());
+        }
+        ArrayList<Instance> instancesList = Collections.list(perturbedInstances.enumerateInstances());
+        for( Instance instance : instancesList){
+            Object classValueObject = InstanceUtil.getClassValueObject(instance);
+            bucketsMap.get(classValueObject).add(instance);
+        }
+        return bucketsMap;
+    }
+
+    /**
+     * @return the class with the most instances
+     */
+    public static double getBiggestClass(Instances instances) {
+        HashMap<Double, Integer> classMap = classCardinalityMap(instances);
+        return Collections.max(classMap.entrySet(), Comparator.comparingInt(Map.Entry::getValue)).getKey();
+    }
+
+    /**
+     * @param instances instances to evaluate
+     * @return a map containing for each class their number of instances
+     */
+    public static HashMap<Double, Integer> classCardinalityMap(Instances instances) {
+        HashMap<Double, Integer> classMap = new HashMap<>();
+        ArrayList<Instance> instancesList = Collections.list(instances.enumerateInstances());
+        instancesList.forEach( instance -> {
+            double classValue = instance.classValue();
+            if (classMap.containsKey(classValue)){
+                int counter = classMap.get(classValue);
+                classMap.put( classValue, counter+1 );
+            }
+            else {
+                classMap.put( classValue, 1 );
+            }
+        } );
+        return classMap;
     }
 }
