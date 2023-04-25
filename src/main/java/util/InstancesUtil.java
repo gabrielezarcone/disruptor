@@ -112,4 +112,32 @@ public class InstancesUtil {
         }
         return bucketsMap;
     }
+
+    /**
+     * @return the class with the most instances
+     */
+    public static double getBiggestClass(Instances instances) {
+        HashMap<Double, Integer> classMap = classCardinalityMap(instances);
+        return Collections.max(classMap.entrySet(), Comparator.comparingInt(Map.Entry::getValue)).getKey();
+    }
+
+    /**
+     * @param instances instances to evaluate
+     * @return a map containing for each class their number of instances
+     */
+    public static HashMap<Double, Integer> classCardinalityMap(Instances instances) {
+        HashMap<Double, Integer> classMap = new HashMap<>();
+        ArrayList<Instance> instancesList = Collections.list(instances.enumerateInstances());
+        instancesList.forEach( instance -> {
+            double classValue = instance.classValue();
+            if (classMap.containsKey(classValue)){
+                int counter = classMap.get(classValue);
+                classMap.put( classValue, counter+1 );
+            }
+            else {
+                classMap.put( classValue, 1 );
+            }
+        } );
+        return classMap;
+    }
 }

@@ -11,9 +11,7 @@ import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.Instances;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.IntStream;
 
 public class SideBySide extends Attack {
@@ -41,8 +39,9 @@ public class SideBySide extends Attack {
         Instances perturbedInstances = new Instances(getTarget());
         try {
 
-            // balance the classes
-            perturbedInstances = ApplyClassBalancer.classBalancer(getTarget());
+            // set the biggest class as the reference class
+            double biggestClass =  InstancesUtil.getBiggestClass(perturbedInstances);
+            setReferenceClass(biggestClass);
 
 
             // create buckets of instances grouped by class value
