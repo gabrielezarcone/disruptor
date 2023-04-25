@@ -247,4 +247,15 @@ public class ArffUtil {
         exportToArffWithDate(instances, outputFilename, pattern);
     }
 
+    /**
+     *
+     * @param instances
+     * @param dirName
+     * @param outputFilename
+     */
+    public static void exportToArffWithDateinFolder(Instances instances, String dirName, String outputFilename) throws IOException {
+        String path = dirName + "/" + outputFilename;
+        exportToArffWithDate(instances, path);
+    }
+
 }

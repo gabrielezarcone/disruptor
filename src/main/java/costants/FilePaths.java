@@ -16,5 +16,6 @@ public class FilePaths {
     public static class TestPath{
         private TestPath(){}
         public static final String IRIS_FILE_PATH = "src/main/resources/test/iris.arff";
+        public static final String DIABETIC_FILE_PATH = "src/main/resources/test/Diabetic_Retinopathy_Debrecen.arff";
     }
 }
