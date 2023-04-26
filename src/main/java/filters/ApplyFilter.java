@@ -7,6 +7,8 @@ import weka.filters.Filter;
 import weka.filters.unsupervised.attribute.AddValues;
 import weka.filters.unsupervised.attribute.Reorder;
 import weka.filters.unsupervised.attribute.SortLabels;
+import weka.filters.unsupervised.instance.Randomize;
+import weka.filters.unsupervised.instance.RemovePercentage;
 
 public class ApplyFilter {
 
@@ -68,5 +70,44 @@ public class ApplyFilter {
         reorder.setInputFormat(instances);
 
         return Filter.useFilter(instances, reorder);
+    }
+
+    /**
+     * Remove the defined percentage of instances
+     * <p/>
+     * Can be used to split training and testing dataset
+     * <p/>
+     *
+     * @param instances Instances
+     * @param percentage percentage of instances to remove
+     * @param toInvert true to invert the percentage of removed instances
+     * @return the instances remaining after the filter
+     * @throws Exception if problems applying the filter
+     */
+    public static Instances removePercentage(Instances instances, double percentage, boolean toInvert) throws Exception {
+        Instances instancesCopy = new Instances(instances);
+
+        RemovePercentage removePercentage = new RemovePercentage();
+        removePercentage.setPercentage(percentage);
+        removePercentage.setInvertSelection(toInvert);
+        removePercentage.setInputFormat(instancesCopy);
+
+        return Filter.useFilter( instancesCopy, removePercentage );
+    }
+
+    /**
+     * Randomize the instances
+     *
+     * @param instances Instances to randomize
+     * @return the instances randomized
+     * @throws Exception if problems applying the filter
+     */
+    public static Instances randomize(Instances instances) throws Exception {
+        Instances instancesCopy = new Instances(instances);
+
+        Randomize randomized = new Randomize();
+        randomized.setInputFormat(instancesCopy);
+
+        return Filter.useFilter( instancesCopy, randomized );
     }
 }
