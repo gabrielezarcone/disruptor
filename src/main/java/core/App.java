@@ -26,8 +26,8 @@ public class App {
 
     private static Instances dataset;
     private static String folderName;
-    private static ArrayList<Attack> attacksList;
-    private static ArrayList<Double> capacitiesList;
+    private static ArrayList<Attack> attacksList = new ArrayList<>();
+    private static ArrayList<Double> capacitiesList = new ArrayList<>();
     private static double trainPercentage = 0.8;
 
 
@@ -46,20 +46,35 @@ public class App {
         // Export test set
         exportTestSet(testSet);
 
-        //---
-        attacksList = new ArrayList<>();
-        attacksList.add(new RandomLabelFlipping(trainset));
-        attacksList.add(new SideBySide(trainset, 1));
-        attacksList.add(new SideBySideOnTop(trainset, 1));
-        attacksList.add(new OverlayCentroids(trainset));
+        populateAttacksList(trainset);
 
-        capacitiesList = new ArrayList<>();
-        capacitiesList.add(0.5);
-        capacitiesList.add(1.0);
-        //---
+        populateCapacitiesList();
+
         // Attack main loop
         performAttacks(trainset, attacksList, capacitiesList);
     }
+
+
+    /**
+     * Fill the attacks list with all the attacks
+     * @param dataset dataset to perturbate during the attacks
+     */
+    private static void populateAttacksList(Instances dataset) {
+        attacksList.add(new RandomLabelFlipping(dataset));
+        attacksList.add(new SideBySide(dataset, 1));
+        attacksList.add(new SideBySideOnTop(dataset, 1));
+        attacksList.add(new OverlayCentroids(dataset));
+    }
+
+    /**
+     * Fill the capacities list
+     */
+    private static void populateCapacitiesList() {
+        capacitiesList = new ArrayList<>();
+        capacitiesList.add(0.5);
+        capacitiesList.add(1.0);
+    }
+
 
     private static void performAttacks(Instances trainingSet, ArrayList<Attack> attacksList, ArrayList<Double> capacitiesList){
         // Nested loop between attacks list and capacities list
