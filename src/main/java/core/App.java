@@ -34,6 +34,7 @@ public class App {
     public static void main(String[] args) throws Exception {
         // Read the arff file
         dataset = ArffUtil.readArffFile(file_path, className);
+
         // Set folder name
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HHmmss");
         folderName = simpleDateFormat.format(new Date());
@@ -46,8 +47,10 @@ public class App {
         // Export test set
         exportTestSet(testSet);
 
+        // Populate the attacks list
         populateAttacksList(trainset);
 
+        // Populate the capacities list
         populateCapacitiesList();
 
         // Attack main loop
@@ -75,7 +78,12 @@ public class App {
         capacitiesList.add(1.0);
     }
 
-
+    /**
+     * Perform all the attacks defined in the attacksList using all the capacities defined in the capacitiesList
+     * @param trainingSet training set to perturb
+     * @param attacksList list of attacks to perform
+     * @param capacitiesList list of capacities
+     */
     private static void performAttacks(Instances trainingSet, ArrayList<Attack> attacksList, ArrayList<Double> capacitiesList){
         // Nested loop between attacks list and capacities list
         attacksList.forEach( attack -> capacitiesList.forEach(capacity -> {
