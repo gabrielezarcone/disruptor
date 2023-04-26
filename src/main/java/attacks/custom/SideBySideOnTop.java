@@ -8,12 +8,12 @@ import weka.core.Instances;
  * every instance is put in the same position all on top of each other
  */
 public class SideBySideOnTop extends SideBySide{
-    public SideBySideOnTop(Instances target) {
-        super(target);
+    public SideBySideOnTop(Instances target, double featureSet) {
+        super(target, featureSet);
     }
 
-    public SideBySideOnTop(Instances target, double capacity, double knowledge) {
-        super(target, capacity, knowledge);
+    public SideBySideOnTop(Instances target, double capacity, double knowledge, double featureSet) {
+        super(target, capacity, knowledge, featureSet);
     }
 
     @Override
