@@ -24,12 +24,14 @@ public class SideBySide extends Attack {
     @Getter @Setter
     protected double referenceClass = 0.0;
 
-    public SideBySide(Instances target) {
+    public SideBySide(Instances target, double featureSet) {
         super(target);
+        setFeaturesSet(featureSet);
     }
 
-    public SideBySide(Instances target, double capacity, double knowledge) {
+    public SideBySide(Instances target, double capacity, double knowledge, double featureSet) {
         super(target, capacity, knowledge);
+        setFeaturesSet(featureSet);
     }
 
 
