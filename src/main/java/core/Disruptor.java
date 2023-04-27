@@ -36,7 +36,6 @@ public class Disruptor {
     private static Instances dataset;
     private static String folderName;
     private static ArrayList<Attack> attacksList = new ArrayList<>();
-    private static ArrayList<Double> capacitiesList = new ArrayList<>();
     private static double trainPercentage = 0.8;
 
     // CLI PARAMS:
@@ -59,6 +58,14 @@ public class Disruptor {
             paramLabel="CLASS",
             defaultValue="class")
     private static String className;
+
+    @CommandLine.Option(
+            names = {"-C", "--capacities"},
+            description= "Comma-separated capacities for the attacks (percentage between 0 and 1)",
+            paramLabel="CAPACITIES",
+            defaultValue="1",
+            split = "," )
+    private static ArrayList<Double>  capacitiesList = new ArrayList<>();
 
 
     public static void main(String[] args) throws Exception {
