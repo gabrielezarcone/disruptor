@@ -15,6 +15,7 @@ public class PomProperties extends PropertiesReader{
     public static class Properties{
         private Properties(){}
         public static final String MERGE_EXPERIMENTER_ARFF_VERSION = "merge-experimenter-arff.version";
+        public static final String DISRUPTOR_VERSION = "disruptor.version";
     }
 
     public PomProperties() throws IOException {

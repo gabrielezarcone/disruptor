@@ -7,6 +7,9 @@ import attacks.custom.SideBySide;
 import attacks.custom.SideBySideOnTop;
 import attacks.labelflipping.RandomLabelFlipping;
 import costants.FilePaths;
+import picocli.CommandLine;
+import properties.versionproviders.DisruptorVersionProvider;
+import properties.versionproviders.MergeExperimenterArffVersionProvider;
 import saver.Exporter;
 import util.ArffUtil;
 import util.InstancesUtil;
@@ -19,6 +22,14 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
+
+@CommandLine.Command(
+        name = "disruptor",
+        description = "\nDisrupt the training set of a Machine Learning algorithm useing a set of different attacks.\n",
+        versionProvider = DisruptorVersionProvider.class,
+        // mixinStandardHelpOptions attribute adds --help and --version options
+        mixinStandardHelpOptions = true
+)
 public class Disruptor {
 
     private static String file_path = FilePaths.TestPath.IRIS_FILE_PATH;
