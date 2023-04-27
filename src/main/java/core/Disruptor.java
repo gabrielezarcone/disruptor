@@ -19,7 +19,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-public class App {
+public class Disruptor {
 
     private static String file_path = FilePaths.TestPath.IRIS_FILE_PATH;
     private  static String className = "class";

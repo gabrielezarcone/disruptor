@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>gzarcone</groupId>
-    <artifactId>tesi</artifactId>
+    <artifactId>disruptor</artifactId>
     <version>0.1.0</version>
 
     <properties>
@@ -77,12 +77,12 @@
                 <version>${spring-boot-maven-plugin.version}</version>
                 <executions>
                     <execution>
-                        <id>Pack main application</id>
+                        <id>Pack Disruptor application</id>
                         <phase>package</phase>
                         <configuration>
-                            <finalName>tesi</finalName>
-                            <mainClass>core.App</mainClass>
-                            <outputDirectory>target/deploy/app</outputDirectory>
+                            <finalName>disruptor</finalName>
+                            <mainClass>core.Disruptor</mainClass>
+                            <outputDirectory>target/deploy/disruptor</outputDirectory>
                             <classifier>${project.version}</classifier>
                         </configuration>
                         <goals>
