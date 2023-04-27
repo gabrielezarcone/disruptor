@@ -17,6 +17,7 @@ import weka.core.Instances;
 import weka.core.converters.ArffSaver;
 import weka.core.converters.CSVSaver;
 
+import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -32,7 +33,6 @@ import java.util.Date;
 )
 public class Disruptor {
 
-    private static String file_path = FilePaths.TestPath.IRIS_FILE_PATH;
     private  static String className = "class";
 
     private static Instances dataset;
@@ -41,10 +41,29 @@ public class Disruptor {
     private static ArrayList<Double> capacitiesList = new ArrayList<>();
     private static double trainPercentage = 0.8;
 
+    // CLI PARAMS:
+    @CommandLine.Parameters(
+            index = "0",
+            description = "Filepath of the CSV file containing the dataset. Use --arff to pass a .arff file instead",
+            paramLabel = "DATASET")
+    private static File datasetFile;
+
+    // CLI OPTIONS:
+    @CommandLine.Option(
+            names = {"-a", "--arff"},
+            description = "Use this option if the dataset file format is .arff",
+            paramLabel = "ARFF")
+    private static boolean isArff;
+
 
     public static void main(String[] args) throws Exception {
         // Read the arff file
-        dataset = ArffUtil.readArffFile(file_path, className);
+        if(isArff){
+            dataset = ArffUtil.readArffFile(datasetFile, className);
+        }
+        else {
+            dataset = csvToInstances();
+        }
 
         // Set folder name
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HHmmss");
@@ -66,6 +85,12 @@ public class Disruptor {
 
         // Attack main loop
         performAttacks(trainset, attacksList, capacitiesList);
+    }
+
+
+    private static Instances csvToInstances() {
+        // Stub method waiting for the implementation
+        return new Instances(dataset);
     }
 
 
