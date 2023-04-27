@@ -33,8 +33,6 @@ import java.util.Date;
 )
 public class Disruptor {
 
-    private  static String className = "class";
-
     private static Instances dataset;
     private static String folderName;
     private static ArrayList<Attack> attacksList = new ArrayList<>();
@@ -54,6 +52,13 @@ public class Disruptor {
             description = "Use this option if the dataset file format is .arff",
             paramLabel = "ARFF")
     private static boolean isArff;
+
+    @CommandLine.Option(
+            names = {"-c", "--class"},
+            description= "Specify the class attribute name. If this param is not set, the program use “class” as the class attribute name",
+            paramLabel="CLASS",
+            defaultValue="class")
+    private static String className;
 
 
     public static void main(String[] args) throws Exception {
