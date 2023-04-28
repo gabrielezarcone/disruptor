@@ -32,31 +32,31 @@ import java.util.concurrent.Callable;
 )
 public class Disruptor implements Callable<Integer> {
 
-    private static Instances dataset;
-    private static String folderName;
-    private static ArrayList<Attack> attacksList = new ArrayList<>();
-    private static double trainPercentage = 0.8;
+    private Instances dataset;
+    private String folderName;
+    private ArrayList<Attack> attacksList = new ArrayList<>();
+    private double trainPercentage = 0.8;
 
     // CLI PARAMS ---------------------------------------------------------------------------------------------------------------------------
     @CommandLine.Parameters(
             index = "0",
             description = "Filepath of the CSV file containing the dataset.\nUse --arff to pass a .arff file instead\n",
             paramLabel = "DATASET")
-    private static File datasetFile;
+    private File datasetFile;
 
     // CLI OPTIONS ---------------------------------------------------------------------------------------------------------------------------
     @CommandLine.Option(
             names = {"-a", "--arff"},
             description = "Use this option if the dataset file format is .arff\n",
             paramLabel = "ARFF")
-    private static boolean isArff;
+    private boolean isArff;
 
     @CommandLine.Option(
             names = {"-c", "--class"},
             description= "Specify the class attribute name.\nIf this param is not set, the program use “class” as the class attribute name\n",
             paramLabel="CLASS",
             defaultValue="class")
-    private static String className;
+    private String className;
 
     @CommandLine.Option(
             names = {"-C", "--capacities"},
@@ -64,10 +64,10 @@ public class Disruptor implements Callable<Integer> {
             paramLabel="CAPACITY",
             defaultValue="1",
             split = "," )
-    private static ArrayList<Double>  capacitiesList = new ArrayList<>();
+    private ArrayList<Double> capacitiesList = new ArrayList<>();
 
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         int exitCode = new CommandLine(new Disruptor()).execute(args);
         System.exit(exitCode);
     }
@@ -109,7 +109,7 @@ public class Disruptor implements Callable<Integer> {
 
 
 
-    private static Instances csvToInstances() {
+    private Instances csvToInstances() {
         // Stub method waiting for the implementation
         return new Instances(dataset);
     }
@@ -119,7 +119,7 @@ public class Disruptor implements Callable<Integer> {
      * Fill the attacks list with all the attacks
      * @param dataset dataset to perturbate during the attacks
      */
-    private static void populateAttacksList(Instances dataset) {
+    private void populateAttacksList(Instances dataset) {
         attacksList.add(new RandomLabelFlipping(dataset));
         attacksList.add(new SideBySide(dataset, 1));
         attacksList.add(new SideBySideOnTop(dataset, 1));
@@ -132,7 +132,7 @@ public class Disruptor implements Callable<Integer> {
      * @param attacksList list of attacks to perform
      * @param capacitiesList list of capacities
      */
-    private static void performAttacks(Instances trainingSet, ArrayList<Attack> attacksList, ArrayList<Double> capacitiesList){
+    private void performAttacks(Instances trainingSet, ArrayList<Attack> attacksList, ArrayList<Double> capacitiesList){
         // Nested loop between attacks list and capacities list
         attacksList.forEach( attack -> capacitiesList.forEach(capacity -> {
 
@@ -162,7 +162,7 @@ public class Disruptor implements Callable<Integer> {
      * @param perturbedDataset The perturbed dataset after the attack
      * @throws IOException if problems during the export
      */
-    private static void exportPerturbedDataset(String attackCode, Instances perturbedDataset) throws IOException {
+    private void exportPerturbedDataset(String attackCode, Instances perturbedDataset) throws IOException {
         // Export ARFF
         Exporter arffExport = new Exporter( new ArffSaver() );
         arffExport.exportInFolder( perturbedDataset, folderName, attackCode );
@@ -171,7 +171,7 @@ public class Disruptor implements Callable<Integer> {
         csvExport.exportInFolder( perturbedDataset, folderName, attackCode );
     }
 
-    private static void exportTestSet(Instances testSet) throws IOException {
+    private void exportTestSet(Instances testSet) throws IOException {
         // Export ARFF
         Exporter arffExport = new Exporter( new ArffSaver() );
         arffExport.exportInFolder( testSet, folderName, testSet.relationName()+"_TEST" );
