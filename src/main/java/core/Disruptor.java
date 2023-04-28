@@ -60,8 +60,8 @@ public class Disruptor implements Callable<Integer> {
 
     @CommandLine.Option(
             names = {"-C", "--capacities"},
-            description= "Comma-separated capacities for the attacks (percentage between 0 and 1)",
-            paramLabel="CAPACITIES",
+            description= "Comma-separated capacities for the attacks.\nThe capacity is a percentage between 0 and 1.\ne.g. -C 0.2,0.5,1",
+            paramLabel="CAPACITY",
             defaultValue="1",
             split = "," )
     private static ArrayList<Double>  capacitiesList = new ArrayList<>();
@@ -100,9 +100,6 @@ public class Disruptor implements Callable<Integer> {
         // Populate the attacks list
         populateAttacksList(trainset);
 
-        // Populate the capacities list
-        populateCapacitiesList();
-
         // Attack main loop
         performAttacks(trainset, attacksList, capacitiesList);
 
@@ -127,15 +124,6 @@ public class Disruptor implements Callable<Integer> {
         attacksList.add(new SideBySide(dataset, 1));
         attacksList.add(new SideBySideOnTop(dataset, 1));
         attacksList.add(new OverlayCentroids(dataset));
-    }
-
-    /**
-     * Fill the capacities list
-     */
-    private static void populateCapacitiesList() {
-        capacitiesList = new ArrayList<>();
-        capacitiesList.add(0.5);
-        capacitiesList.add(1.0);
     }
 
     /**
