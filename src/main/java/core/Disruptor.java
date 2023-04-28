@@ -40,27 +40,27 @@ public class Disruptor implements Callable<Integer> {
     // CLI PARAMS ---------------------------------------------------------------------------------------------------------------------------
     @CommandLine.Parameters(
             index = "0",
-            description = "Filepath of the CSV file containing the dataset. Use --arff to pass a .arff file instead",
+            description = "Filepath of the CSV file containing the dataset.\nUse --arff to pass a .arff file instead\n",
             paramLabel = "DATASET")
     private static File datasetFile;
 
     // CLI OPTIONS ---------------------------------------------------------------------------------------------------------------------------
     @CommandLine.Option(
             names = {"-a", "--arff"},
-            description = "Use this option if the dataset file format is .arff",
+            description = "Use this option if the dataset file format is .arff\n",
             paramLabel = "ARFF")
     private static boolean isArff;
 
     @CommandLine.Option(
             names = {"-c", "--class"},
-            description= "Specify the class attribute name. If this param is not set, the program use “class” as the class attribute name",
+            description= "Specify the class attribute name.\nIf this param is not set, the program use “class” as the class attribute name\n",
             paramLabel="CLASS",
             defaultValue="class")
     private static String className;
 
     @CommandLine.Option(
             names = {"-C", "--capacities"},
-            description= "Comma-separated capacities for the attacks.\nThe capacity is a percentage between 0 and 1.\ne.g. -C 0.2,0.5,1",
+            description= "Comma-separated capacities for the attacks.\nThe capacity is a percentage between 0 and 1.\ne.g. -C 0.2,0.5,1\n",
             paramLabel="CAPACITY",
             defaultValue="1",
             split = "," )
