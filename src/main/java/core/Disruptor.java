@@ -72,6 +72,12 @@ public class Disruptor implements Callable<Integer> {
             defaultValue="0.8" )
     private double trainPercentage;
 
+    @CommandLine.Option(
+            names = {"-b", "--balance"},
+            description = "[[ TO BE IMPLEMENTED ]]\nPerform other 2 run of the attacks on blanced dataset\nThe first additional run the instances are balanced with Resample.\nFor the second run is used  SMOTE\n",
+            paramLabel = "BALANCE")
+    private boolean toBalance;
+
 
     public static void main(String[] args) {
         int exitCode = new CommandLine(new Disruptor()).execute(args);
