@@ -53,14 +53,14 @@ public class Disruptor implements Callable<Integer> {
 
     @CommandLine.Option(
             names = {"-c", "--class"},
-            description= "Specify the class attribute name.\nIf this param is not set, the program use “class” as the class attribute name\n",
+            description= "Specify the class attribute name.\nIf this param is not set, the program use “class” as the class attribute name\nDefault: class\n",
             paramLabel="CLASS",
             defaultValue="class")
     private String className;
 
     @CommandLine.Option(
             names = {"-C", "--capacities"},
-            description= "Comma-separated capacities for the attacks.\nThe capacity is a percentage between 0 and 1.\ne.g. -C 0.2,0.5,1\n",
+            description= "Comma-separated capacities for the attacks.\nThe capacity is a percentage between 0 and 1.\ne.g. -C 0.2,0.5,1\nDefault: 1\n",
             paramLabel="CAPACITY",
             defaultValue="1",
             split = "," )
