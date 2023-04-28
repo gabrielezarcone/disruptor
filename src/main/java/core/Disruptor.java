@@ -6,10 +6,8 @@ import attacks.custom.OverlayCentroids;
 import attacks.custom.SideBySide;
 import attacks.custom.SideBySideOnTop;
 import attacks.labelflipping.RandomLabelFlipping;
-import costants.FilePaths;
 import picocli.CommandLine;
 import properties.versionproviders.DisruptorVersionProvider;
-import properties.versionproviders.MergeExperimenterArffVersionProvider;
 import saver.Exporter;
 import util.ArffUtil;
 import util.InstancesUtil;
@@ -22,6 +20,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.concurrent.Callable;
 
 
 @CommandLine.Command(
@@ -31,21 +30,21 @@ import java.util.Date;
         // mixinStandardHelpOptions attribute adds --help and --version options
         mixinStandardHelpOptions = true
 )
-public class Disruptor {
+public class Disruptor implements Callable<Integer> {
 
     private static Instances dataset;
     private static String folderName;
     private static ArrayList<Attack> attacksList = new ArrayList<>();
     private static double trainPercentage = 0.8;
 
-    // CLI PARAMS:
+    // CLI PARAMS ---------------------------------------------------------------------------------------------------------------------------
     @CommandLine.Parameters(
             index = "0",
             description = "Filepath of the CSV file containing the dataset. Use --arff to pass a .arff file instead",
             paramLabel = "DATASET")
     private static File datasetFile;
 
-    // CLI OPTIONS:
+    // CLI OPTIONS ---------------------------------------------------------------------------------------------------------------------------
     @CommandLine.Option(
             names = {"-a", "--arff"},
             description = "Use this option if the dataset file format is .arff",
@@ -69,6 +68,15 @@ public class Disruptor {
 
 
     public static void main(String[] args) throws Exception {
+        int exitCode = new CommandLine(new Disruptor()).execute(args);
+        System.exit(exitCode);
+    }
+
+
+    // EXECUTION ---------------------------------------------------------------------------------------------------------------------------
+    @Override
+    public Integer call() throws Exception {
+
         // Read the arff file
         if(isArff){
             dataset = ArffUtil.readArffFile(datasetFile, className);
@@ -97,7 +105,11 @@ public class Disruptor {
 
         // Attack main loop
         performAttacks(trainset, attacksList, capacitiesList);
+
+
+        return 0;
     }
+
 
 
     private static Instances csvToInstances() {
