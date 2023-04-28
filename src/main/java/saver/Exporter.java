@@ -109,8 +109,8 @@ public class Exporter {
      * @throws IOException if problem during the export
      */
     public void exportInFolder(Instances instances, String dirName, String outputFilename) throws IOException {
-        String path = dirName + File.separator + outputFilename;
-        export(instances, path);
+        String outputDirectoryPath = dirName + File.separator;
+        export(instances, outputDirectoryPath, outputFilename);
     }
 
     /**
