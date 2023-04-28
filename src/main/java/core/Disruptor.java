@@ -35,7 +35,6 @@ public class Disruptor implements Callable<Integer> {
     private Instances dataset;
     private String folderName;
     private ArrayList<Attack> attacksList = new ArrayList<>();
-    private double trainPercentage = 0.8;
 
     // CLI PARAMS ---------------------------------------------------------------------------------------------------------------------------
     @CommandLine.Parameters(
@@ -65,6 +64,13 @@ public class Disruptor implements Callable<Integer> {
             defaultValue="1",
             split = "," )
     private ArrayList<Double> capacitiesList = new ArrayList<>();
+
+    @CommandLine.Option(
+            names = {"-t", "--train-percent"},
+            description= "Percentage of the training set.\nSet to 1 if they want to use all the dataset as training set \nThe percentage is a number between 0 and 1.\nDefault: 0.8\n",
+            paramLabel="TRAIN_PERCENTAGE",
+            defaultValue="0.8" )
+    private double trainPercentage;
 
 
     public static void main(String[] args) {
