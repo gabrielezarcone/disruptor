@@ -65,6 +65,21 @@ public class ArffUtil {
     }
 
     /**
+     * Return a {@link Instances} object from a .arff file setting the class attribute as specified
+     * @param file the .arff source file
+     * @param className name of the attribute to be setted as the class attribute
+     * @return {@link Instances} object based on an .arff file
+     * @throws IOException if problems fetching the file
+     */
+    public static Instances readArffFile(File file, String className) throws IOException {
+        Instances dataset = readArffFile(file);
+        Attribute classAttribute = dataset.attribute(className);
+        dataset.setClass(classAttribute);
+
+        return dataset;
+    }
+
+    /**
      *
      * @param file1
      * @param file2
