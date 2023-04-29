@@ -39,7 +39,7 @@ public class Disruptor implements Callable<Integer> {
     // CLI PARAMS ---------------------------------------------------------------------------------------------------------------------------
     @CommandLine.Parameters(
             index = "0",
-            description = "Filepath of the CSV file containing the dataset.\nUse --arff to pass a .arff file instead\n",
+            description = "Filepath of the CSV file containing the dataset.\nIt is MANDATORY that the first row of the CSV file should contains the features names.\nUse --arff to pass a .arff file instead\n",
             paramLabel = "DATASET")
     private File datasetFile;
 
