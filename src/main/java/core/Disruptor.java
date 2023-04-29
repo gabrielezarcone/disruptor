@@ -33,8 +33,7 @@ import java.util.concurrent.Callable;
 )
 public class Disruptor implements Callable<Integer> {
 
-    private Instances dataset;
-    private String folderName;
+    private String folderName = "output";
     private ArrayList<Attack> attacksList = new ArrayList<>();
 
     // CLI PARAMS ---------------------------------------------------------------------------------------------------------------------------
@@ -90,7 +89,8 @@ public class Disruptor implements Callable<Integer> {
     @Override
     public Integer call() throws Exception {
 
-        // Read the arff file
+        // Read the dataset file
+        Instances dataset;
         if(isArff){
             dataset = ArffUtil.readArffFile(datasetFile, className);
         }
@@ -100,7 +100,7 @@ public class Disruptor implements Callable<Integer> {
 
         // Set folder name
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HHmmss");
-        folderName = simpleDateFormat.format(new Date());
+        folderName = folderName + File.separator + simpleDateFormat.format(new Date());
 
         // Split Train and Test set
         Instances[] splitTrainTest = InstancesUtil.splitTrainTest(dataset, trainPercentage, true);
@@ -115,7 +115,6 @@ public class Disruptor implements Callable<Integer> {
 
         // Attack main loop
         performAttacks(trainset, attacksList, capacitiesList);
-
 
         return 0;
     }
