@@ -5,10 +5,14 @@ import weka.core.Attribute;
 import weka.core.Instances;
 import weka.filters.Filter;
 import weka.filters.unsupervised.attribute.AddValues;
+import weka.filters.unsupervised.attribute.NumericToNominal;
 import weka.filters.unsupervised.attribute.Reorder;
 import weka.filters.unsupervised.attribute.SortLabels;
 import weka.filters.unsupervised.instance.Randomize;
 import weka.filters.unsupervised.instance.RemovePercentage;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class ApplyFilter {
 
@@ -109,5 +113,27 @@ public class ApplyFilter {
         randomized.setInputFormat(instancesCopy);
 
         return Filter.useFilter( instancesCopy, randomized );
+    }
+
+    /**
+     * Convert a numeric attribute to nominal
+     *
+     * @param instances Instances
+     * @param attributeList Attributes to convert
+     * @return the instances with the attribute converted
+     * @throws Exception if problems applying the filter
+     */
+    public static Instances numericToNominal(Instances instances, List<Attribute> attributeList) throws Exception {
+        String relationName = instances.relationName();
+        Instances instancesCopy = new Instances(instances);
+
+        NumericToNominal numericToNominal = new NumericToNominal();
+        numericToNominal.setInputFormat(instancesCopy);
+        int[] attributeIndexes = attributeList.stream().mapToInt( Attribute::index ).toArray();
+        numericToNominal.setAttributeIndicesArray( attributeIndexes );
+
+        Instances filteredInstances = Filter.useFilter(instancesCopy, numericToNominal);
+        filteredInstances.setRelationName(relationName);
+        return filteredInstances;
     }
 }

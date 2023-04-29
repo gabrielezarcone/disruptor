@@ -10,6 +10,7 @@ import picocli.CommandLine;
 import properties.versionproviders.DisruptorVersionProvider;
 import saver.Exporter;
 import util.ArffUtil;
+import util.CSVUtil;
 import util.InstancesUtil;
 import weka.core.Instances;
 import weka.core.converters.ArffSaver;
@@ -94,7 +95,7 @@ public class Disruptor implements Callable<Integer> {
             dataset = ArffUtil.readArffFile(datasetFile, className);
         }
         else {
-            dataset = csvToInstances();
+            dataset = CSVUtil.readCSVFile(datasetFile, className);
         }
 
         // Set folder name
@@ -117,13 +118,6 @@ public class Disruptor implements Callable<Integer> {
 
 
         return 0;
-    }
-
-
-
-    private Instances csvToInstances() {
-        // Stub method waiting for the implementation
-        return new Instances(dataset);
     }
 
 
