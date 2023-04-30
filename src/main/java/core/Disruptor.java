@@ -35,6 +35,8 @@ public class Disruptor implements Callable<Integer> {
 
     private String folderName = "output";
     private ArrayList<Attack> attacksList = new ArrayList<>();
+    private ArrayList<Instances> perturbedDatasets = new ArrayList<>();
+    private Instances testSet;
 
     // CLI PARAMS ---------------------------------------------------------------------------------------------------------------------------
     @CommandLine.Parameters(
@@ -111,7 +113,7 @@ public class Disruptor implements Callable<Integer> {
         // Split Train and Test set
         Instances[] splitTrainTest = InstancesUtil.splitTrainTest(dataset, trainPercentage, true);
         Instances trainset = splitTrainTest[0];
-        Instances testSet = splitTrainTest[1];
+        testSet = splitTrainTest[1];
 
         // Export test set
         exportTestSet(testSet);
@@ -121,6 +123,13 @@ public class Disruptor implements Callable<Integer> {
 
         // Attack main loop
         performAttacks(trainset, attacksList, capacitiesList);
+
+        if(experimenter){
+            // Add the input dataset to use as a reference
+            perturbedDatasets.add(dataset);
+            // Append the test set to each dataset
+            appendTestSet();
+        }
 
         return 0;
     }
@@ -157,6 +166,10 @@ public class Disruptor implements Callable<Integer> {
             Instances perturbedInstances = attack.attack();
             perturbedInstances.setRelationName(attackCode);
 
+            if(experimenter){
+                perturbedDatasets.add(perturbedInstances);
+            }
+
             // Export the perturbed instances
             try {
                 exportPerturbedDataset(attackCode, perturbedInstances);
@@ -189,5 +202,19 @@ public class Disruptor implements Callable<Integer> {
         // Export CSV
         Exporter csvExport = new Exporter( new CSVSaver() );
         csvExport.exportInFolder( testSet, folderName, testSet.relationName()+"_TEST" );
+    }
+
+
+    /**
+     * Append the test set to every dataset present in perturbedDatasets
+     */
+    private void appendTestSet(){
+        perturbedDatasets.forEach( dataset -> {
+            try {
+                InstancesUtil.addAllInstances(dataset, testSet);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
     }
 }
