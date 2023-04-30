@@ -10,6 +10,7 @@ import picocli.CommandLine;
 import properties.versionproviders.DisruptorVersionProvider;
 import saver.Exporter;
 import util.ArffUtil;
+import util.CSVUtil;
 import util.InstancesUtil;
 import weka.core.Instances;
 import weka.core.converters.ArffSaver;
@@ -32,14 +33,13 @@ import java.util.concurrent.Callable;
 )
 public class Disruptor implements Callable<Integer> {
 
-    private Instances dataset;
-    private String folderName;
+    private String folderName = "output";
     private ArrayList<Attack> attacksList = new ArrayList<>();
 
     // CLI PARAMS ---------------------------------------------------------------------------------------------------------------------------
     @CommandLine.Parameters(
             index = "0",
-            description = "Filepath of the CSV file containing the dataset.\nUse --arff to pass a .arff file instead\n",
+            description = "Filepath of the CSV file containing the dataset.\nIt is MANDATORY that the first row of the CSV file should contains the features names.\nUse --arff to pass a .arff file instead\n",
             paramLabel = "DATASET")
     private File datasetFile;
 
@@ -89,17 +89,18 @@ public class Disruptor implements Callable<Integer> {
     @Override
     public Integer call() throws Exception {
 
-        // Read the arff file
+        // Read the dataset file
+        Instances dataset;
         if(isArff){
             dataset = ArffUtil.readArffFile(datasetFile, className);
         }
         else {
-            dataset = csvToInstances();
+            dataset = CSVUtil.readCSVFile(datasetFile, className);
         }
 
         // Set folder name
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HHmmss");
-        folderName = simpleDateFormat.format(new Date());
+        folderName = folderName + File.separator + simpleDateFormat.format(new Date());
 
         // Split Train and Test set
         Instances[] splitTrainTest = InstancesUtil.splitTrainTest(dataset, trainPercentage, true);
@@ -115,15 +116,7 @@ public class Disruptor implements Callable<Integer> {
         // Attack main loop
         performAttacks(trainset, attacksList, capacitiesList);
 
-
         return 0;
-    }
-
-
-
-    private Instances csvToInstances() {
-        // Stub method waiting for the implementation
-        return new Instances(dataset);
     }
 
 
