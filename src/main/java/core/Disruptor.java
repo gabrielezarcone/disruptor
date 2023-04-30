@@ -78,6 +78,12 @@ public class Disruptor implements Callable<Integer> {
             paramLabel = "BALANCE")
     private boolean toBalance;
 
+    @CommandLine.Option(
+            names = {"-e", "--experimenter"},
+            description = "Evaluate the effectiveness of the attacks using several ML algorithms\n",
+            paramLabel = "EXP")
+    private boolean experimenter;
+
 
     public static void main(String[] args) {
         int exitCode = new CommandLine(new Disruptor()).execute(args);
