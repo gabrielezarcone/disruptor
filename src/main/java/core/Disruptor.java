@@ -12,11 +12,23 @@ import saver.Exporter;
 import util.ArffUtil;
 import util.CSVUtil;
 import util.InstancesUtil;
+import weka.classifiers.Classifier;
+import weka.classifiers.bayes.BayesNet;
+import weka.classifiers.bayes.NaiveBayes;
+import weka.classifiers.trees.J48;
+import weka.classifiers.trees.RandomForest;
 import weka.core.Instances;
+import weka.core.Range;
 import weka.core.converters.ArffSaver;
 import weka.core.converters.CSVSaver;
+import weka.experiment.*;
 
+import javax.swing.*;
+import java.beans.IntrospectionException;
+import java.beans.PropertyDescriptor;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -34,6 +46,7 @@ import java.util.concurrent.Callable;
 public class Disruptor implements Callable<Integer> {
 
     private String folderName = "output";
+    private String experimentFolderName = folderName + File.separator + "experiment";
     private ArrayList<Attack> attacksList = new ArrayList<>();
     private ArrayList<Instances> perturbedDatasets = new ArrayList<>();
     private Instances testSet;
@@ -129,6 +142,8 @@ public class Disruptor implements Callable<Integer> {
             perturbedDatasets.add(dataset);
             // Append the test set to each dataset
             appendTestSet();
+            // Evaluate the effectiveness of the attacks
+            evaluateAttacks();
         }
 
         return 0;
@@ -216,5 +231,138 @@ public class Disruptor implements Callable<Integer> {
                 e.printStackTrace();
             }
         });
+    }
+
+
+    /**
+     * Evaluate the effectiveness of the attacks using several ML algorithms
+     */
+    private void evaluateAttacks() throws Exception {
+        // Use the Experimenter Weka API for the evaluation
+
+        // 1. setup the experiment ------------------------------------------------------------------------------------------
+        Experiment experiment = new Experiment();
+        experiment.setPropertyArray(new Classifier[0]);
+        experiment.setUsePropertyIterator(true);
+
+        SplitEvaluator splitEvaluator = null;
+        Classifier classifier = null;
+        Instances dataset = perturbedDatasets.get(0);
+        boolean classification = false;
+        if ( dataset.classAttribute().isNominal() ) {
+            classification = true;
+            splitEvaluator  = new ClassifierSplitEvaluator();
+            classifier = ((ClassifierSplitEvaluator) splitEvaluator).getClassifier();
+        }
+        else if ( dataset.classAttribute().isNumeric() ) {
+            splitEvaluator  = new RegressionSplitEvaluator();
+            classifier = ((RegressionSplitEvaluator) splitEvaluator).getClassifier();
+        }
+
+        RandomSplitResultProducer rsrp = new RandomSplitResultProducer();
+        rsrp.setRandomizeData(false);
+        rsrp.setTrainPercent(trainPercentage);
+        rsrp.setSplitEvaluator(splitEvaluator);
+
+        PropertyNode[] propertyPath = new PropertyNode[2];
+        try {
+            propertyPath[0] = new PropertyNode(
+                    splitEvaluator,
+                    new PropertyDescriptor("splitEvaluator", RandomSplitResultProducer.class),
+                    RandomSplitResultProducer.class
+            );
+            propertyPath[1] = new PropertyNode(
+                    classifier,
+                    new PropertyDescriptor("classifier", splitEvaluator.getClass()),
+                    splitEvaluator.getClass()
+            );
+        }
+        catch (IntrospectionException e) {
+            e.printStackTrace();
+        }
+
+        experiment.setResultProducer(rsrp);
+        experiment.setPropertyPath(propertyPath);
+
+        // Set the runs number:
+        experiment.setRunLower(1);
+        experiment.setRunUpper(10);
+
+        // Set classifiers
+        ArrayList<Classifier> classifiersList = new ArrayList<>();
+        classifiersList.add( new RandomForest() );
+        classifiersList.add( new NaiveBayes() );
+        classifiersList.add( new J48() );
+        classifiersList.add( new BayesNet() );
+        experiment.setPropertyArray( classifiersList.toArray() );
+
+        // Multiple datasets
+        DefaultListModel<File> model = new DefaultListModel<>();
+        perturbedDatasets.forEach( perturbedDataset -> {
+            Exporter arffExport = new Exporter( new ArffSaver() );
+            try {
+                arffExport.exportInFolder( perturbedDataset, experimentFolderName, perturbedDataset.relationName()+"_EXP" );
+                File datasetFile = arffExport.getExportedFile();
+                model.addElement(datasetFile);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } );
+        experiment.setDatasets(model);
+
+        // Save result in an arff file
+        InstancesResultListener irl = new InstancesResultListener();
+        irl.setOutputFile(new File(experimentFolderName+File.separator+"experimenterOutput.arff"));
+        experiment.setResultListener(irl);
+
+
+        // 2. run experiment -------------------------------------------------------------------------------------------
+        System.out.println("Initializing...");
+        experiment.initialize();
+        System.out.println("Running...");
+        experiment.runExperiment();
+        System.out.println("Finishing...");
+        experiment.postProcess();
+
+
+        // 3. calculate statistics and output them -------------------------------------------------------------------------------------------
+        System.out.println("Evaluating...");
+        PairedTTester tester = new PairedCorrectedTTester();
+        Instances result = new Instances(new BufferedReader(new FileReader(irl.getOutputFile())));
+        tester.setInstances(result);
+        tester.setSortColumn(-1);
+        tester.setRunColumn(result.attribute("Key_Run").index());
+        //TODO capire se questo if serve
+        /*if (classification)
+            tester.setFoldColumn(result.attribute("Key_Fold").index());*/
+        tester.setResultsetKeyColumns(
+                new Range(
+                        ""
+                                + (result.attribute("Key_Dataset").index() + 1)));
+        tester.setDatasetKeyColumns(
+                new Range(
+                        ""
+                                + (result.attribute("Key_Scheme").index() + 1)
+                                + ","
+                                + (result.attribute("Key_Scheme_options").index() + 1)
+                                + ","
+                                + (result.attribute("Key_Scheme_version_ID").index() + 1)));
+        tester.setResultMatrix(new ResultMatrixPlainText());
+        tester.setDisplayedResultsets(null);
+        tester.setSignificanceLevel(0.05);
+        tester.setShowStdDevs(true);
+        // fill result matrix (but discarding the output)
+        if (classification)
+            tester.multiResultsetFull(0, result.attribute("Percent_correct").index());
+        else
+            tester.multiResultsetFull(0, result.attribute("Correlation_coefficient").index());
+        // output results for reach dataset
+        System.out.println("\nResult:");
+        ResultMatrix matrix = tester.getResultMatrix();
+        for (int i = 0; i < matrix.getColCount(); i++) {
+            System.out.println(matrix.getColName(i));
+            System.out.println("    Perc. correct: " + matrix.getMean(i, 0));
+            System.out.println("    StdDev: " + matrix.getStdDev(i, 0));
+        }
     }
 }

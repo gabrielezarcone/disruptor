@@ -4,7 +4,7 @@ import costants.FilePaths;
 import lombok.Getter;
 import lombok.Setter;
 import weka.core.Instances;
-import weka.core.converters.Saver;
+import weka.core.converters.AbstractFileSaver;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,9 +18,16 @@ public class Exporter {
      * @return the saver used by this export
      */
     @Setter @Getter
-    private Saver saver;
+    private AbstractFileSaver saver;
 
-    public Exporter(Saver saver){
+    /**
+     * @param exportedFile the exported file
+     * @return the exported file
+     */
+    @Setter @Getter
+    private File exportedFile;
+
+    public Exporter(AbstractFileSaver saver){
         this.saver = saver;
     }
 
@@ -59,6 +66,8 @@ public class Exporter {
         this.saver.setInstances(instances);
         this.saver.setFile(new File( outputDirectoryPath + outputFilename + fileExtension) );
         this.saver.writeBatch();
+
+        this.exportedFile = saver.retrieveFile();
     }
 
 
