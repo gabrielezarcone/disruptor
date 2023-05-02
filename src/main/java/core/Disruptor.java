@@ -6,6 +6,7 @@ import attacks.custom.OverlayCentroids;
 import attacks.custom.SideBySide;
 import attacks.custom.SideBySideOnTop;
 import attacks.labelflipping.RandomLabelFlipping;
+import experiment.DisruptorExperiment;
 import picocli.CommandLine;
 import properties.versionproviders.DisruptorVersionProvider;
 import saver.Exporter;
@@ -34,7 +35,10 @@ import java.util.concurrent.Callable;
 public class Disruptor implements Callable<Integer> {
 
     private String folderName = "output";
+    private String experimentFolderName = "experiment";
     private ArrayList<Attack> attacksList = new ArrayList<>();
+    private ArrayList<Instances> perturbedDatasets = new ArrayList<>();
+    private Instances testSet;
 
     // CLI PARAMS ---------------------------------------------------------------------------------------------------------------------------
     @CommandLine.Parameters(
@@ -78,6 +82,12 @@ public class Disruptor implements Callable<Integer> {
             paramLabel = "BALANCE")
     private boolean toBalance;
 
+    @CommandLine.Option(
+            names = {"-e", "--experimenter"},
+            description = "Evaluate the effectiveness of the attacks using several ML algorithms\n",
+            paramLabel = "EXP")
+    private boolean experimenter;
+
 
     public static void main(String[] args) {
         int exitCode = new CommandLine(new Disruptor()).execute(args);
@@ -98,14 +108,20 @@ public class Disruptor implements Callable<Integer> {
             dataset = CSVUtil.readCSVFile(datasetFile, className);
         }
 
+        if(experimenter){
+            // To use as a reference, add the input dataset as the first list element
+            perturbedDatasets.add(dataset);
+        }
+
         // Set folder name
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HHmmss");
         folderName = folderName + File.separator + simpleDateFormat.format(new Date());
+        experimentFolderName = folderName + File.separator + experimentFolderName;
 
         // Split Train and Test set
         Instances[] splitTrainTest = InstancesUtil.splitTrainTest(dataset, trainPercentage, true);
         Instances trainset = splitTrainTest[0];
-        Instances testSet = splitTrainTest[1];
+        testSet = splitTrainTest[1];
 
         // Export test set
         exportTestSet(testSet);
@@ -115,6 +131,13 @@ public class Disruptor implements Callable<Integer> {
 
         // Attack main loop
         performAttacks(trainset, attacksList, capacitiesList);
+
+        if(experimenter){
+            // Append the test set to each dataset
+            appendTestSet();
+            // Evaluate the effectiveness of the attacks
+            evaluateAttacks();
+        }
 
         return 0;
     }
@@ -151,6 +174,10 @@ public class Disruptor implements Callable<Integer> {
             Instances perturbedInstances = attack.attack();
             perturbedInstances.setRelationName(attackCode);
 
+            if(experimenter){
+                perturbedDatasets.add(perturbedInstances);
+            }
+
             // Export the perturbed instances
             try {
                 exportPerturbedDataset(attackCode, perturbedInstances);
@@ -183,5 +210,28 @@ public class Disruptor implements Callable<Integer> {
         // Export CSV
         Exporter csvExport = new Exporter( new CSVSaver() );
         csvExport.exportInFolder( testSet, folderName, testSet.relationName()+"_TEST" );
+    }
+
+
+    /**
+     * Append the test set to every dataset present in perturbedDatasets
+     */
+    private void appendTestSet(){
+        perturbedDatasets.forEach( dataset -> {
+            try {
+                InstancesUtil.addAllInstances(dataset, testSet);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+
+    /**
+     * Evaluate the effectiveness of the attacks using several ML algorithms
+     */
+    private void evaluateAttacks() throws Exception {
+        DisruptorExperiment experiment = new DisruptorExperiment(perturbedDatasets, trainPercentage, folderName);
+        experiment.start();
     }
 }
