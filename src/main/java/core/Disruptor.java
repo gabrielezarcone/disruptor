@@ -46,7 +46,7 @@ import java.util.concurrent.Callable;
 public class Disruptor implements Callable<Integer> {
 
     private String folderName = "output";
-    private String experimentFolderName = folderName + File.separator + "experiment";
+    private String experimentFolderName = "experiment";
     private ArrayList<Attack> attacksList = new ArrayList<>();
     private ArrayList<Instances> perturbedDatasets = new ArrayList<>();
     private Instances testSet;
@@ -119,9 +119,15 @@ public class Disruptor implements Callable<Integer> {
             dataset = CSVUtil.readCSVFile(datasetFile, className);
         }
 
+        if(experimenter){
+            // To use as a reference, add the input dataset as the first list element
+            perturbedDatasets.add(dataset);
+        }
+
         // Set folder name
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HHmmss");
         folderName = folderName + File.separator + simpleDateFormat.format(new Date());
+        experimentFolderName = folderName + File.separator + experimentFolderName;
 
         // Split Train and Test set
         Instances[] splitTrainTest = InstancesUtil.splitTrainTest(dataset, trainPercentage, true);
@@ -138,8 +144,6 @@ public class Disruptor implements Callable<Integer> {
         performAttacks(trainset, attacksList, capacitiesList);
 
         if(experimenter){
-            // Add the input dataset to use as a reference
-            perturbedDatasets.add(dataset);
             // Append the test set to each dataset
             appendTestSet();
             // Evaluate the effectiveness of the attacks
@@ -261,7 +265,7 @@ public class Disruptor implements Callable<Integer> {
 
         RandomSplitResultProducer rsrp = new RandomSplitResultProducer();
         rsrp.setRandomizeData(false);
-        rsrp.setTrainPercent(trainPercentage);
+        rsrp.setTrainPercent(trainPercentage*100);
         rsrp.setSplitEvaluator(splitEvaluator);
 
         PropertyNode[] propertyPath = new PropertyNode[2];
@@ -359,9 +363,10 @@ public class Disruptor implements Callable<Integer> {
         // output results for reach dataset
         System.out.println("\nResult:");
         ResultMatrix matrix = tester.getResultMatrix();
+        System.out.println(matrix);
         for (int i = 0; i < matrix.getColCount(); i++) {
             System.out.println(matrix.getColName(i));
-            System.out.println("    Perc. correct: " + matrix.getMean(i, 0));
+            System.out.println("    Perc. correct (mean): " + matrix.getMean(i, 0));
             System.out.println("    StdDev: " + matrix.getStdDev(i, 0));
         }
     }
