@@ -194,11 +194,11 @@ public class DisruptorExperiment {
         instancesResultListener.setOutputFile(new File(experimentFolderName+File.separator+"experimenterOutput.arff"));
         experiment.setResultListener(instancesResultListener);
 
-        System.out.println("Initializing...");
+        log.info("Initializing...");
         experiment.initialize();
-        System.out.println("Running...");
+        log.info("Running...");
         experiment.runExperiment();
-        System.out.println("Finishing...");
+        log.info("Finishing...");
         experiment.postProcess();
     }
 
@@ -207,7 +207,7 @@ public class DisruptorExperiment {
      * @throws Exception
      */
     private void analyseExperiment() throws Exception {
-        System.out.println("Evaluating...");
+        log.info("Evaluating...");
 
         PairedTTester tester = new PairedCorrectedTTester();
         Instances result = new Instances(new BufferedReader(new FileReader(instancesResultListener.getOutputFile())));
@@ -252,13 +252,12 @@ public class DisruptorExperiment {
     }
 
     private void printResults(PairedTTester tester) {
-        System.out.println("\nResult:");
         ResultMatrix matrix = tester.getResultMatrix();
-        System.out.println(matrix);
+        log.info("Result:\n\n{}", matrix);
         for (int i = 0; i < matrix.getColCount(); i++) {
-            System.out.println(matrix.getColName(i));
-            System.out.println("    Perc. correct (mean): " + matrix.getMean(i, 0));
-            System.out.println("    StdDev: " + matrix.getStdDev(i, 0));
+            log.info(matrix.getColName(i));
+            log.info("    Perc. correct (mean): " + matrix.getMean(i, 0));
+            log.info("    StdDev: " + matrix.getStdDev(i, 0));
         }
     }
 
