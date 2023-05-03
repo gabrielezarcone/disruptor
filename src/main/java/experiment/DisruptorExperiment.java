@@ -2,6 +2,7 @@ package experiment;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import saver.Exporter;
 import weka.classifiers.Classifier;
 import weka.classifiers.bayes.BayesNet;
@@ -21,7 +22,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 
+@Slf4j
 public class DisruptorExperiment {
     /**
      * @param experiment this experiment
@@ -146,7 +149,12 @@ public class DisruptorExperiment {
             );
         }
         catch (IntrospectionException e) {
-            e.printStackTrace();
+            log.error("Problem during introspection");
+            log.error("ex type:" + e.getClass().getSimpleName());
+            log.error("ex cause:" + e.getCause());
+            if (log.isTraceEnabled()){
+                e.printStackTrace();
+            }
         }
 
         experiment.setResultProducer(rsrp);
@@ -171,7 +179,13 @@ public class DisruptorExperiment {
                 File datasetFile = arffExport.getExportedFile();
                 model.addElement(datasetFile);
             } catch (IOException e) {
-                e.printStackTrace();
+                log.error("Problem adding datasets to the experiment");
+                log.error("ex type:" + e.getClass().getSimpleName());
+                log.error("ex cause:" + e.getCause());
+                log.debug("dataset relation name: " + perturbedDataset.relationName() );
+                if (log.isTraceEnabled()){
+                    e.printStackTrace();
+                }
             }
         } );
         experiment.setDatasets(model);

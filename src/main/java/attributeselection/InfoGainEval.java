@@ -2,13 +2,16 @@ package attributeselection;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import weka.attributeSelection.AttributeSelection;
 import weka.attributeSelection.InfoGainAttributeEval;
 import weka.attributeSelection.Ranker;
 import weka.core.Instances;
 
+import java.util.Arrays;
 import java.util.HashMap;
 
+@Slf4j
 public class InfoGainEval {
 
     @Getter @Setter
@@ -37,7 +40,13 @@ public class InfoGainEval {
             attsel.SelectAttributes(instances);
             attrRanks = attsel.rankedAttributes();
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Problem ranking attributes using InfoGainEvaluator");
+            log.error("ex type:" + e.getClass().getSimpleName());
+            log.error("ex cause:" + e.getCause());
+            log.debug("attrRanks: "+ Arrays.toString(attrRanks));
+            if (log.isTraceEnabled()){
+                e.printStackTrace();
+            }
         }
         populateFields(attrRanks);
     }

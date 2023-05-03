@@ -7,6 +7,7 @@ import attacks.custom.SideBySide;
 import attacks.custom.SideBySideOnTop;
 import attacks.labelflipping.RandomLabelFlipping;
 import experiment.DisruptorExperiment;
+import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;
 import properties.versionproviders.DisruptorVersionProvider;
 import saver.Exporter;
@@ -24,7 +25,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.concurrent.Callable;
 
-
+@Slf4j
 @CommandLine.Command(
         name = "disruptor",
         description = "\nDisrupt the training set of a Machine Learning algorithm useing a set of different attacks.\n",
@@ -182,7 +183,13 @@ public class Disruptor implements Callable<Integer> {
             try {
                 exportPerturbedDataset(attackCode, perturbedInstances);
             } catch (Exception e) {
-                e.printStackTrace();
+                log.error("Problem during the export of the perturbed dataset");
+                log.error("ex type:" + e.getClass().getSimpleName());
+                log.error("ex cause:" + e.getCause());
+                log.debug(attackCode);
+                if (log.isTraceEnabled()){
+                    e.printStackTrace();
+                }
             }
 
         }));
@@ -221,7 +228,12 @@ public class Disruptor implements Callable<Integer> {
             try {
                 InstancesUtil.addAllInstances(dataset, testSet);
             } catch (Exception e) {
-                e.printStackTrace();
+                log.error("Problem appending the test set to the train set");
+                log.error("ex type:" + e.getClass().getSimpleName());
+                log.error("ex cause:" + e.getCause());
+                if (log.isTraceEnabled()){
+                    e.printStackTrace();
+                }
             }
         });
     }

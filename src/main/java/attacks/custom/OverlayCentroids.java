@@ -3,6 +3,7 @@ package attacks.custom;
 import attacks.Attack;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import weka.clusterers.SimpleKMeans;
 import weka.core.Attribute;
 import weka.core.DenseInstance;
@@ -13,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.stream.IntStream;
 
+@Slf4j
 public class OverlayCentroids extends Attack {
 
     private final SimpleKMeans simpleKMeans = new SimpleKMeans();
@@ -52,17 +54,30 @@ public class OverlayCentroids extends Attack {
 
             // Translate the instances towards the mean centroid
             IntStream.range( 0, attackSize() ).parallel().forEach( i -> {
+                Instance currentInstance = instances.instance(i);
                 try {
-                    Instance currentInstance = instances.instance(i);
                     Instance translatedInstance = translateInstance( currentInstance, clustersCentroids, meanCentroid );
                     instances.set( i, translatedInstance );
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    log.error("Problem during translation of the instance");
+                    log.error("ex type:" + e.getClass().getSimpleName());
+                    log.error("ex cause:" + e.getCause());
+                    log.debug("current instance: " + currentInstance);
+                    log.debug("translated instance: " + instances.instance(i));
+                    log.debug("meanCentroid: " + meanCentroid);
+                    if (log.isTraceEnabled()){
+                        e.printStackTrace();
+                    }
                 }
             });
 
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Problem during the init of SimpleKMeans");
+            log.error("ex type:" + e.getClass().getSimpleName());
+            log.error("ex cause:" + e.getCause());
+            if (log.isTraceEnabled()){
+                e.printStackTrace();
+            }
         }
         // return the perturbed instances
         return instances;
