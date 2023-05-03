@@ -4,6 +4,7 @@ import attacks.Attack;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import util.ExceptionUtil;
 import weka.clusterers.SimpleKMeans;
 import weka.core.Attribute;
 import weka.core.DenseInstance;
@@ -60,24 +61,16 @@ public class OverlayCentroids extends Attack {
                     instances.set( i, translatedInstance );
                 } catch (Exception e) {
                     log.error("Problem during translation of the instance");
-                    log.error("ex type:" + e.getClass().getSimpleName());
-                    log.error("ex cause:" + e.getCause());
                     log.debug("current instance: " + currentInstance);
                     log.debug("translated instance: " + instances.instance(i));
                     log.debug("meanCentroid: " + meanCentroid);
-                    if (log.isTraceEnabled()){
-                        e.printStackTrace();
-                    }
+                    ExceptionUtil.logException(e, log);
                 }
             });
 
         } catch (Exception e) {
-            log.error("Problem during the init of SimpleKMeans");
-            log.error("ex type:" + e.getClass().getSimpleName());
-            log.error("ex cause:" + e.getCause());
-            if (log.isTraceEnabled()){
-                e.printStackTrace();
-            }
+            log.error("Problem during the OverlayCentroids attack");
+            ExceptionUtil.logException(e, log);
         }
         // return the perturbed instances
         return instances;

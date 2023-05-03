@@ -13,6 +13,7 @@ import properties.versionproviders.DisruptorVersionProvider;
 import saver.Exporter;
 import util.ArffUtil;
 import util.CSVUtil;
+import util.ExceptionUtil;
 import util.InstancesUtil;
 import weka.core.Instances;
 import weka.core.converters.ArffSaver;
@@ -184,12 +185,8 @@ public class Disruptor implements Callable<Integer> {
                 exportPerturbedDataset(attackCode, perturbedInstances);
             } catch (Exception e) {
                 log.error("Problem during the export of the perturbed dataset");
-                log.error("ex type:" + e.getClass().getSimpleName());
-                log.error("ex cause:" + e.getCause());
                 log.debug(attackCode);
-                if (log.isTraceEnabled()){
-                    e.printStackTrace();
-                }
+                ExceptionUtil.logException(e, log);
             }
 
         }));
@@ -229,11 +226,7 @@ public class Disruptor implements Callable<Integer> {
                 InstancesUtil.addAllInstances(dataset, testSet);
             } catch (Exception e) {
                 log.error("Problem appending the test set to the train set");
-                log.error("ex type:" + e.getClass().getSimpleName());
-                log.error("ex cause:" + e.getCause());
-                if (log.isTraceEnabled()){
-                    e.printStackTrace();
-                }
+                ExceptionUtil.logException(e, log);
             }
         });
     }

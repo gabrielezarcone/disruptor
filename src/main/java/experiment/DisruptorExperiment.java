@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import saver.Exporter;
+import util.ExceptionUtil;
 import weka.classifiers.Classifier;
 import weka.classifiers.bayes.BayesNet;
 import weka.classifiers.bayes.NaiveBayes;
@@ -150,11 +151,7 @@ public class DisruptorExperiment {
         }
         catch (IntrospectionException e) {
             log.error("Problem during introspection");
-            log.error("ex type:" + e.getClass().getSimpleName());
-            log.error("ex cause:" + e.getCause());
-            if (log.isTraceEnabled()){
-                e.printStackTrace();
-            }
+            ExceptionUtil.logException(e, log);
         }
 
         experiment.setResultProducer(rsrp);
@@ -180,12 +177,8 @@ public class DisruptorExperiment {
                 model.addElement(datasetFile);
             } catch (IOException e) {
                 log.error("Problem adding datasets to the experiment");
-                log.error("ex type:" + e.getClass().getSimpleName());
-                log.error("ex cause:" + e.getCause());
                 log.debug("dataset relation name: " + perturbedDataset.relationName() );
-                if (log.isTraceEnabled()){
-                    e.printStackTrace();
-                }
+                ExceptionUtil.logException(e, log);
             }
         } );
         experiment.setDatasets(model);

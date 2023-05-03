@@ -5,6 +5,7 @@ import attributeselection.InfoGainEval;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import util.ExceptionUtil;
 import util.InstanceUtil;
 import util.InstancesUtil;
 import weka.core.Attribute;
@@ -95,11 +96,7 @@ public class SideBySide extends Attack {
 
         } catch (Exception e) {
             log.error("Problem performing the side by side attack");
-            log.error("ex type:" + e.getClass().getSimpleName());
-            log.error("ex cause:" + e.getCause());
-            if (log.isTraceEnabled()){
-                e.printStackTrace();
-            }
+            ExceptionUtil.logException(e, log);
         }
         return perturbedInstances;
     }
