@@ -1,6 +1,8 @@
 <configuration>
     <property name="LOG_FILE" value="DisruptorLog" />
     <property name="LOG_DIR" value="logs/disruptor" />
+    <property name="EXPERIMENT_DIR" value="output/ExperimentResults" />
+    <property name="EXPERIMENT_FILE" value="DisruptorResults" />
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
@@ -23,8 +25,25 @@
         </encoder>
     </appender>
 
+    <appender name="FILE_EXPERIMENT" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${EXPERIMENT_DIR}/${EXPERIMENT_FILE}.txt</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!-- daily rollover -->
+            <fileNamePattern>${EXPERIMENT_DIR}/%d{yyyy/MM}/${EXPERIMENT_FILE}.%i.txt.gz</fileNamePattern>
+            <maxFileSize>100MB</maxFileSize>
+            <!-- keep 30 days' worth of history capped at 1GB total size -->
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>1GB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} %-5level [%thread] %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
 
 
+    <logger name="experiment" level="INFO">
+        <appender-ref ref="FILE_EXPERIMENT"/>
+    </logger>
 
     <root level="info">
         <appender-ref ref="STDOUT" />
