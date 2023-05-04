@@ -1,8 +1,8 @@
 <configuration>
-    <property name="LOG_FILE" value="DisruptorLog" />
+    <property name="LOG_FILE" value="disruptor" />
     <property name="LOG_DIR" value="logs/disruptor" />
     <property name="EXPERIMENT_DIR" value="output/ExperimentResults" />
-    <property name="EXPERIMENT_FILE" value="DisruptorResults" />
+    <property name="EXPERIMENT_FILE" value="disruptorResults" />
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
