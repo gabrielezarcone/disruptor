@@ -62,9 +62,9 @@ public class OverlayCentroids extends Attack {
                     instances.set( i, translatedInstance );
                 } catch (Exception e) {
                     log.error("Problem during translation of the instance");
-                    log.debug("current instance: " + currentInstance);
-                    log.debug("translated instance: " + translatedInstance);
-                    log.debug("meanCentroid: " + meanCentroid);
+                    log.debug("\tcurrent instance: " + currentInstance);
+                    log.debug("\ttranslated instance: " + translatedInstance);
+                    log.debug("\tmeanCentroid: " + meanCentroid);
                     ExceptionUtil.logException(e, log);
                 }
             });
@@ -124,6 +124,24 @@ public class OverlayCentroids extends Attack {
             double meanCentroidValue = meanCentroid.value(attribute);
 
             double translatedValue = ( instanceValue - clusterCentroidValue) + meanCentroidValue;
+
+            if(attribute.isNominal() && translatedValue<0){
+                // set to the first attribute value if the translated value is negative
+                translatedValue = 0;
+            }
+
+            try{
+                // check for translations problems for nominal attributes
+                attribute.value((int) translatedValue);
+            }catch ( ArrayIndexOutOfBoundsException e ){
+                log.error("The translated value is not a value of this nominal attribute");
+                log.debug("\tattribute: "+ attribute);
+                log.debug("\tinstanceValue: "+ instanceValue);
+                log.debug("\tclusterCentroidValue: "+ clusterCentroidValue);
+                log.debug("\tmeanCentroidValue: "+ meanCentroidValue);
+                log.debug("\ttranslatedValue: "+ translatedValue);
+                ExceptionUtil.logException(e, log);
+            }
 
             result.setValue(attribute, translatedValue);
 
