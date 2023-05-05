@@ -54,15 +54,16 @@ public class OverlayCentroids extends Attack {
             });
 
             // Translate the instances towards the mean centroid
-            IntStream.range( 0, attackSize() ).parallel().forEach( i -> {
+            IntStream.range( 0, attackSize() ).forEach( i -> {
                 Instance currentInstance = instances.instance(i);
+                Instance translatedInstance = null;
                 try {
-                    Instance translatedInstance = translateInstance( currentInstance, clustersCentroids, meanCentroid );
+                    translatedInstance = translateInstance( currentInstance, clustersCentroids, meanCentroid );
                     instances.set( i, translatedInstance );
                 } catch (Exception e) {
                     log.error("Problem during translation of the instance");
                     log.debug("current instance: " + currentInstance);
-                    log.debug("translated instance: " + instances.instance(i));
+                    log.debug("translated instance: " + translatedInstance);
                     log.debug("meanCentroid: " + meanCentroid);
                     ExceptionUtil.logException(e, log);
                 }
