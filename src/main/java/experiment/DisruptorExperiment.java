@@ -2,7 +2,9 @@ package experiment;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import saver.Exporter;
+import util.ExceptionUtil;
 import weka.classifiers.Classifier;
 import weka.classifiers.bayes.BayesNet;
 import weka.classifiers.bayes.NaiveBayes;
@@ -21,7 +23,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 
+@Slf4j
 public class DisruptorExperiment {
     /**
      * @param experiment this experiment
@@ -146,7 +150,8 @@ public class DisruptorExperiment {
             );
         }
         catch (IntrospectionException e) {
-            e.printStackTrace();
+            log.error("Problem during introspection");
+            ExceptionUtil.logException(e, log);
         }
 
         experiment.setResultProducer(rsrp);
@@ -171,7 +176,9 @@ public class DisruptorExperiment {
                 File datasetFile = arffExport.getExportedFile();
                 model.addElement(datasetFile);
             } catch (IOException e) {
-                e.printStackTrace();
+                log.error("Problem adding datasets to the experiment");
+                log.debug("dataset relation name: " + perturbedDataset.relationName() );
+                ExceptionUtil.logException(e, log);
             }
         } );
         experiment.setDatasets(model);
@@ -187,11 +194,11 @@ public class DisruptorExperiment {
         instancesResultListener.setOutputFile(new File(experimentFolderName+File.separator+"experimenterOutput.arff"));
         experiment.setResultListener(instancesResultListener);
 
-        System.out.println("Initializing...");
+        log.info("Initializing...");
         experiment.initialize();
-        System.out.println("Running...");
+        log.info("Running...");
         experiment.runExperiment();
-        System.out.println("Finishing...");
+        log.info("Finishing...");
         experiment.postProcess();
     }
 
@@ -200,7 +207,7 @@ public class DisruptorExperiment {
      * @throws Exception
      */
     private void analyseExperiment() throws Exception {
-        System.out.println("Evaluating...");
+        log.info("Evaluating...");
 
         PairedTTester tester = new PairedCorrectedTTester();
         Instances result = new Instances(new BufferedReader(new FileReader(instancesResultListener.getOutputFile())));
@@ -245,13 +252,12 @@ public class DisruptorExperiment {
     }
 
     private void printResults(PairedTTester tester) {
-        System.out.println("\nResult:");
         ResultMatrix matrix = tester.getResultMatrix();
-        System.out.println(matrix);
+        log.info("Result:\n\n{}", matrix);
         for (int i = 0; i < matrix.getColCount(); i++) {
-            System.out.println(matrix.getColName(i));
-            System.out.println("    Perc. correct (mean): " + matrix.getMean(i, 0));
-            System.out.println("    StdDev: " + matrix.getStdDev(i, 0));
+            log.info(matrix.getColName(i));
+            log.info("    Perc. correct (mean): " + matrix.getMean(i, 0));
+            log.info("    StdDev: " + matrix.getStdDev(i, 0));
         }
     }
 

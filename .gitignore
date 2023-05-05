@@ -3,3 +3,5 @@ target/
 src/main/resources/output/
 src/main/resources/ExplorerResults/
 out/
+output/
+logs/

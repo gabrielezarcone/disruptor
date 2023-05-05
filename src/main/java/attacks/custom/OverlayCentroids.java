@@ -3,6 +3,8 @@ package attacks.custom;
 import attacks.Attack;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
+import util.ExceptionUtil;
 import weka.clusterers.SimpleKMeans;
 import weka.core.Attribute;
 import weka.core.DenseInstance;
@@ -13,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.stream.IntStream;
 
+@Slf4j
 public class OverlayCentroids extends Attack {
 
     private final SimpleKMeans simpleKMeans = new SimpleKMeans();
@@ -52,17 +55,22 @@ public class OverlayCentroids extends Attack {
 
             // Translate the instances towards the mean centroid
             IntStream.range( 0, attackSize() ).parallel().forEach( i -> {
+                Instance currentInstance = instances.instance(i);
                 try {
-                    Instance currentInstance = instances.instance(i);
                     Instance translatedInstance = translateInstance( currentInstance, clustersCentroids, meanCentroid );
                     instances.set( i, translatedInstance );
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    log.error("Problem during translation of the instance");
+                    log.debug("current instance: " + currentInstance);
+                    log.debug("translated instance: " + instances.instance(i));
+                    log.debug("meanCentroid: " + meanCentroid);
+                    ExceptionUtil.logException(e, log);
                 }
             });
 
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Problem during the OverlayCentroids attack");
+            ExceptionUtil.logException(e, log);
         }
         // return the perturbed instances
         return instances;

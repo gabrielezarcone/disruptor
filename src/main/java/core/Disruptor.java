@@ -7,11 +7,13 @@ import attacks.custom.SideBySide;
 import attacks.custom.SideBySideOnTop;
 import attacks.labelflipping.RandomLabelFlipping;
 import experiment.DisruptorExperiment;
+import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;
 import properties.versionproviders.DisruptorVersionProvider;
 import saver.Exporter;
 import util.ArffUtil;
 import util.CSVUtil;
+import util.ExceptionUtil;
 import util.InstancesUtil;
 import weka.core.Instances;
 import weka.core.converters.ArffSaver;
@@ -24,7 +26,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.concurrent.Callable;
 
-
+@Slf4j
 @CommandLine.Command(
         name = "disruptor",
         description = "\nDisrupt the training set of a Machine Learning algorithm useing a set of different attacks.\n",
@@ -182,7 +184,9 @@ public class Disruptor implements Callable<Integer> {
             try {
                 exportPerturbedDataset(attackCode, perturbedInstances);
             } catch (Exception e) {
-                e.printStackTrace();
+                log.error("Problem during the export of the perturbed dataset");
+                log.debug(attackCode);
+                ExceptionUtil.logException(e, log);
             }
 
         }));
@@ -221,7 +225,8 @@ public class Disruptor implements Callable<Integer> {
             try {
                 InstancesUtil.addAllInstances(dataset, testSet);
             } catch (Exception e) {
-                e.printStackTrace();
+                log.error("Problem appending the test set to the train set");
+                ExceptionUtil.logException(e, log);
             }
         });
     }
