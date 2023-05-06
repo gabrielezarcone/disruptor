@@ -12,6 +12,7 @@ import weka.core.Instance;
 import weka.core.Instances;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.stream.IntStream;
 
@@ -52,6 +53,10 @@ public class OverlayCentroids extends Attack {
                 double attributeMean = clustersCentroids.meanOrMode(attribute);
                 meanCentroid.setValue(attribute, attributeMean);
             });
+
+            log.debug("Centroids for {} with {} capacity", this.getClass().getSimpleName(), getCapacity());
+            log.debug("\tclustersCentroids: {}", clustersCentroids);
+            log.debug("\tmeanCentroid: {}", meanCentroid);
 
             // Translate the instances towards the mean centroid
             IntStream.range( 0, attackSize() ).forEach( i -> {
@@ -125,21 +130,37 @@ public class OverlayCentroids extends Attack {
 
             double translatedValue = ( instanceValue - clusterCentroidValue) + meanCentroidValue;
 
-            if(attribute.isNominal() && translatedValue<0){
-                // set to the first attribute value if the translated value is negative
-                translatedValue = 0;
+            double lowerAttributeValue = 0;
+            double greaterAttributeValue = attribute.numValues()-1 ;
+            if(attribute.isNominal()){
+                if( translatedValue < lowerAttributeValue ){
+                    // set to the first attribute value if the translated value is negative
+                    translatedValue = lowerAttributeValue;
+                }
+                else if( translatedValue > greaterAttributeValue ){
+                    // set to the last attribute value if the translated value is greater than the last possible value
+                    translatedValue = greaterAttributeValue;
+                }
             }
 
             try{
                 // check for translations problems for nominal attributes
                 attribute.value((int) translatedValue);
-            }catch ( ArrayIndexOutOfBoundsException e ){
+            }catch ( IndexOutOfBoundsException e){
                 log.error("The translated value is not a value of this nominal attribute");
                 log.debug("\tattribute: "+ attribute);
+                log.debug("\t++++++++++++++++++++++++++++");
                 log.debug("\tinstanceValue: "+ instanceValue);
                 log.debug("\tclusterCentroidValue: "+ clusterCentroidValue);
                 log.debug("\tmeanCentroidValue: "+ meanCentroidValue);
                 log.debug("\ttranslatedValue: "+ translatedValue);
+                log.debug("\t++++++++++++++++++++++++++++");
+                log.debug("\tinstance: "+ instance);
+                log.debug("\tclusterCentroid: "+ clusterCentroid);
+                log.debug("\t++++++++++++++++++++++++++++");
+                log.debug("\tinstance values: "+ Arrays.toString(instance.toDoubleArray()));
+                log.debug("\tclusterCentroid values: "+ Arrays.toString(clusterCentroid.toDoubleArray()));
+                log.debug("\tmeanCentroid: "+ meanCentroid);
                 ExceptionUtil.logException(e, log);
             }
 
