@@ -13,9 +13,7 @@ public class ExceptionUtil {
     public static void logException(Exception e, Logger log){
         log.error("\tException: {}", e.getClass().getSimpleName());
         log.error("\tCause: {}", e.getCause().toString());
-        if (log.isTraceEnabled()){
-            e.printStackTrace();
-        }
+        log.trace("Stack Trace: ", e);
         log.error("---------------------------------------------------------------");
     }
 }

@@ -41,62 +41,57 @@ public class SideBySide extends Attack {
     @Override
     public Instances attack() {
         Instances perturbedInstances = new Instances(getTarget());
-        try {
 
-            // set the biggest class as the reference class
-            double biggestClass =  InstancesUtil.getBiggestClass(perturbedInstances);
-            setReferenceClass(biggestClass);
-
-
-            // create buckets of instances grouped by class value
-            HashMap<Object, ArrayList<Instance>> bucketsMap = InstancesUtil.bucketsByClass(perturbedInstances);
+        // set the biggest class as the reference class
+        double biggestClass =  InstancesUtil.getBiggestClass(perturbedInstances);
+        setReferenceClass(biggestClass);
 
 
-            // Use as reference feature the feature selected by the feature selection algorithm
-            InfoGainEval infoGainEval = new InfoGainEval(perturbedInstances);
-            infoGainEval.eval();
-            int worstAttributeIndex = (int) infoGainEval.getWorstFeatureIndex();
-            Attribute worstAttribute = perturbedInstances.attribute( worstAttributeIndex );
+        // create buckets of instances grouped by class value
+        HashMap<Object, ArrayList<Instance>> bucketsMap = InstancesUtil.bucketsByClass(perturbedInstances);
 
 
-            // get the bucket corresponding to the reference class
-            ArrayList<Instance> referenceBucketList = bucketsMap.get(getReferenceClassObject());
-            ArrayList<Instance> perturbedList = new ArrayList<>();
+        // Use as reference feature the feature selected by the feature selection algorithm
+        InfoGainEval infoGainEval = new InfoGainEval(perturbedInstances);
+        infoGainEval.eval();
+        int worstAttributeIndex = (int) infoGainEval.getWorstFeatureIndex();
+        Attribute worstAttribute = perturbedInstances.attribute( worstAttributeIndex );
 
 
-            // Cycle the buckets
-            for (Map.Entry<Object,ArrayList<Instance>> bucketsMapEntry : bucketsMap.entrySet()){
+        // get the bucket corresponding to the reference class
+        ArrayList<Instance> referenceBucketList = bucketsMap.get(getReferenceClassObject());
+        ArrayList<Instance> perturbedList = new ArrayList<>();
 
-                ArrayList<Instance> bucketList = bucketsMapEntry.getValue();
-                // Do not cycle the bucket corresponding to  the reference class
-                if( !bucketList.equals(referenceBucketList )){
-                    //Cycle on the instances
-                    // Perform the attack only in the part of the target instances specified by the capacity
-                    int attackSize = attackSize()/perturbedInstances.classAttribute().numValues();
 
-                    IntStream.range(0, attackSize).parallel().forEach( i -> {
+        // Cycle the buckets
+        for (Map.Entry<Object,ArrayList<Instance>> bucketsMapEntry : bucketsMap.entrySet()){
 
-                        Instance instance = bucketList.get( i );
-                        Instance referenceInstance = referenceBucketList.get( i );
+            ArrayList<Instance> bucketList = bucketsMapEntry.getValue();
+            // Do not cycle the bucket corresponding to  the reference class
+            if( !bucketList.equals(referenceBucketList )){
+                //Cycle on the instances
+                // Perform the attack only in the part of the target instances specified by the capacity
+                // bucketList.size() : perturbedInstances.size() = x : attackSize()
+                int attackSize = ( bucketList.size() * attackSize() ) / perturbedInstances.size() ;
 
-                        attackInstance(instance, referenceInstance, worstAttribute );
+                IntStream.range(0, attackSize).parallel().forEach( i -> {
 
-                        bucketList.set(i, instance);
-                    });
-                }
-                // append all the bucketList together
-                perturbedList.addAll(bucketList);
+                    Instance instance = bucketList.get( i );
+                    Instance referenceInstance = referenceBucketList.get( i );
+
+                    attackInstance(instance, referenceInstance, worstAttribute );
+
+                    bucketList.set(i, instance);
+                });
             }
+            // append all the bucketList together
+            perturbedList.addAll(bucketList);
+        }
 
-            // Save perturbed instances in an Instances object
-            for( int i=0; i<perturbedList.size(); i++){
-                Instance instance = perturbedList.get(i);
-                perturbedInstances.set(i, instance);
-            }
-
-        } catch (Exception e) {
-            log.error("Problem performing the side by side attack");
-            ExceptionUtil.logException(e, log);
+        // Save perturbed instances in an Instances object
+        for( int i=0; i<perturbedList.size(); i++){
+            Instance instance = perturbedList.get(i);
+            perturbedInstances.set(i, instance);
         }
         return perturbedInstances;
     }
