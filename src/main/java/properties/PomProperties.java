@@ -10,7 +10,7 @@ import java.io.IOException;
  */
 public class PomProperties extends PropertiesReader{
 
-    public static final String PROPERTIES_PATH = "src/main/resources/pom.properties";
+    public static final String PROPERTIES_PATH = "/pom.properties";
 
     public static class Properties{
         private Properties(){}

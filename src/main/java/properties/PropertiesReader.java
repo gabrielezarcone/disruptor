@@ -12,10 +12,11 @@ public abstract class PropertiesReader {
     private final Properties properties;
 
     protected PropertiesReader(String propertyFilePath) throws IOException {
-        FileReader fileReader = new FileReader(new File(propertyFilePath));
+        InputStream is = this.getClass().getResourceAsStream(propertyFilePath);
+        InputStreamReader inputStreamReader = new InputStreamReader(is);
         properties = new Properties();
-        properties.load(fileReader);
-        fileReader.close();
+        properties.load(inputStreamReader);
+        inputStreamReader.close();
     }
 
     public String getProperty(String propertyName){
