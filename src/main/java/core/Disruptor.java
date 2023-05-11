@@ -15,6 +15,11 @@ import util.ArffUtil;
 import util.CSVUtil;
 import util.ExceptionUtil;
 import util.InstancesUtil;
+import weka.classifiers.Classifier;
+import weka.classifiers.bayes.BayesNet;
+import weka.classifiers.bayes.NaiveBayes;
+import weka.classifiers.trees.J48;
+import weka.classifiers.trees.RandomForest;
 import weka.core.Instances;
 import weka.core.converters.ArffSaver;
 import weka.core.converters.CSVSaver;
@@ -39,6 +44,7 @@ public class Disruptor implements Callable<Integer> {
     private String folderName = "output";
     private String experimentFolderName = "experiment";
     private ArrayList<Attack> attacksList = new ArrayList<>();
+    private ArrayList<Classifier> classifiersList = new ArrayList<>();
     private ArrayList<Instances> perturbedDatasets = new ArrayList<>();
     private Instances testSet;
 
@@ -128,8 +134,9 @@ public class Disruptor implements Callable<Integer> {
         // Export test set
         exportTestSet(testSet);
 
-        // Populate the attacks list
+        // Populate the attacks and the classifiers lists
         populateAttacksList(trainset);
+        populateClassifiersList();
 
         // Attack main loop
         performAttacks(trainset, attacksList, capacitiesList);
@@ -154,6 +161,15 @@ public class Disruptor implements Callable<Integer> {
         attacksList.add(new SideBySide(dataset, 1));
         attacksList.add(new SideBySideOnTop(dataset, 1));
         attacksList.add(new OverlayCentroids(dataset));
+    }
+    /**
+     * Fill the classifiers list with a subset of classifiers
+     */
+    private void populateClassifiersList() {
+        classifiersList.add( new RandomForest() );
+        classifiersList.add( new NaiveBayes() );
+        classifiersList.add( new J48() );
+        classifiersList.add( new BayesNet() );
     }
 
     /**
@@ -237,6 +253,7 @@ public class Disruptor implements Callable<Integer> {
      */
     private void evaluateAttacks() throws Exception {
         DisruptorExperiment experiment = new DisruptorExperiment(perturbedDatasets, trainPercentage, folderName);
+        experiment.setClassifiersList(classifiersList);
         experiment.start();
     }
 }

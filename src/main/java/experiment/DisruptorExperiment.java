@@ -69,6 +69,13 @@ public class DisruptorExperiment {
     @Getter @Setter
     private InstancesResultListener instancesResultListener = new InstancesResultListener();
 
+    /**
+     * @param classifiersList list of classifier used for the evaluation
+     * @return list of classifier used for the evaluation
+     */
+    @Getter @Setter
+    private ArrayList<Classifier> classifiersList = new ArrayList<>();
+
 
 
     public DisruptorExperiment(ArrayList<Instances> perturbedDatasets, double trainPercentage, String outputFolderName){
@@ -159,11 +166,6 @@ public class DisruptorExperiment {
     }
 
     private void setupClassifiers() {
-        ArrayList<Classifier> classifiersList = new ArrayList<>();
-        classifiersList.add( new RandomForest() );
-        classifiersList.add( new NaiveBayes() );
-        classifiersList.add( new J48() );
-        classifiersList.add( new BayesNet() );
         experiment.setPropertyArray( classifiersList.toArray() );
     }
 
