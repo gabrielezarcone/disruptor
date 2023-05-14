@@ -10,6 +10,7 @@ import experiment.DisruptorExperiment;
 import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;
 import properties.versionproviders.DisruptorVersionProvider;
+import roc.ROCGenerator;
 import saver.Exporter;
 import util.ArffUtil;
 import util.CSVUtil;
@@ -96,10 +97,18 @@ public class Disruptor implements Callable<Integer> {
             paramLabel = "EXP")
     private boolean experimenter;
 
+    @CommandLine.Option(
+            names = {"-r", "--roc"},
+            description = "Show the ROC curves for each attack\n",
+            paramLabel = "ROC")
+    private static boolean roc;
+
 
     public static void main(String[] args) {
         int exitCode = new CommandLine(new Disruptor()).execute(args);
-        System.exit(exitCode);
+        if(!roc){
+            System.exit(exitCode);
+        }
     }
 
 
@@ -180,32 +189,44 @@ public class Disruptor implements Callable<Integer> {
      */
     private void performAttacks(Instances trainingSet, ArrayList<Attack> attacksList, ArrayList<Double> capacitiesList){
         // Nested loop between attacks list and capacities list
-        attacksList.forEach( attack -> capacitiesList.forEach(capacity -> {
+        attacksList.forEach( attack -> {
+            String attackName = trainingSet.relationName() + "_" + attack.getClass().getSimpleName();
+            capacitiesList.forEach(capacity -> {
 
-            // Define an attack code unique for this attack run
-            String attackCode = trainingSet.relationName() + "_" + attack.getClass().getSimpleName() + "_" + capacity;
+                // Define an attack code unique for this attack run
+                String attackCode = attackName + "_" + capacity;
 
-            // Perform this attack with this capacity
-            Instances trainingSetCopy = new Instances(trainingSet);
-            attack.setTarget( trainingSetCopy );
-            attack.setCapacity( capacity );
-            Instances perturbedInstances = attack.attack();
-            perturbedInstances.setRelationName(attackCode);
+                // Perform this attack with this capacity
+                Instances trainingSetCopy = new Instances(trainingSet);
+                attack.setTarget( trainingSetCopy );
+                attack.setCapacity( capacity );
+                Instances perturbedInstances = attack.attack();
+                perturbedInstances.setRelationName(attackCode);
 
-            if(experimenter){
-                perturbedDatasets.add(perturbedInstances);
+                if(experimenter || roc){
+                    perturbedDatasets.add(perturbedInstances);
+                }
+
+                // Export the perturbed instances
+                try {
+                    exportPerturbedDataset(attackCode, perturbedInstances);
+                } catch (Exception e) {
+                    log.error("Problem during the export of the perturbed dataset");
+                    log.debug(attackCode);
+                    ExceptionUtil.logException(e, log);
+                }
+
+            });
+            if(roc){
+                for(Classifier classifier : classifiersList){
+                    log.debug("Started ROC for attack {} and classifier {}", attack.getClass().getSimpleName(), classifier.getClass().getSimpleName());
+                    ROCGenerator rocGenerator = new ROCGenerator(testSet, classifier, attackName);
+                    rocGenerator.visualizeROCCurves(perturbedDatasets);
+                    //TODO rocGenerator.setCurveColor(); https://stackoverflow.com/questions/470690/how-to-automatically-generate-n-distinct-colors
+                    log.debug("Finished ROC for attack {} and classifier {}", attack.getClass().getSimpleName(), classifier.getClass().getSimpleName());
+                }
             }
-
-            // Export the perturbed instances
-            try {
-                exportPerturbedDataset(attackCode, perturbedInstances);
-            } catch (Exception e) {
-                log.error("Problem during the export of the perturbed dataset");
-                log.debug(attackCode);
-                ExceptionUtil.logException(e, log);
-            }
-
-        }));
+        });
     }
 
     /**
