@@ -54,6 +54,7 @@ public class ROCGenerator {
 
     /**
      * Shows one panel containing all the ROC curves of the different train set defined (Using the same test set)
+     * @param trainSetList list of train sets on which the visualized ROC curves are calculated
      */
     public void visualizeROCCurves(List<Instances> trainSetList){
         boolean first = true;
@@ -85,8 +86,8 @@ public class ROCGenerator {
     }
 
     /**
-     *
-     * @param trainSet
+     * Shows one panel containing the ROC curves of the train set defined
+     * @param trainSet train set on which the visualized ROC curve is calculated
      */
     public void visualizeROCCurve(Instances trainSet){
         ArrayList<Instances> trainList = new ArrayList<>();
@@ -98,7 +99,10 @@ public class ROCGenerator {
 
 
     /**
-     * Visualize a panel containing the ROC curve using the defined classifier
+     * Set up the WEKA ROC curve panel
+     * @param vmc the WEKA ROC curve panel
+     * @param rocCurve the ROC curve instances
+     * @param plotData2D the plotted ROC curve data
      * @throws Exception if errors during the generation of the curve
      */
     private void setupROCPanel(ThresholdVisualizePanel vmc, Instances rocCurve, PlotData2D plotData2D) throws Exception {
@@ -112,7 +116,8 @@ public class ROCGenerator {
 
 
     /**
-     * Create the panel to show the ROC curve
+     * Decorate the WEKA ROC curve panel adding strings and stats
+     * @param vmc the WEKA ROC curve panel
      * @param rocCurve ROC curve to show
      * @return the panel
      */
@@ -126,8 +131,8 @@ public class ROCGenerator {
     /**
      * Generate plottable data of the ROC Curve
      * @param rocCurve ROC curve to plot
-     * @param plotName
-     * @return
+     * @param plotName the name given to this plottable data
+     * @return the generated plottable data
      */
     private PlotData2D generatePlotData2D(Instances rocCurve, String plotName) {
         double rocArea = ThresholdCurve.getROCArea(rocCurve);
@@ -146,7 +151,7 @@ public class ROCGenerator {
      * Connect with a line every consecutive instance
      * @param rocCurve ROC curve to plot
      * @param plotData2D plottable Data of the ROC curve
-     * @throws Exception
+     * @throws Exception if errors while connecting points
      */
     private void connectROCCurvePoints(Instances rocCurve, PlotData2D plotData2D) throws Exception {
         boolean[] connectedPoints = new boolean[rocCurve.numInstances()];
@@ -156,8 +161,8 @@ public class ROCGenerator {
     }
 
     /**
-     * Show the panel containing the ROC curve
-     * @param vmc the panel
+     * Show system window containing the specified WEKA ROC curve panel
+     * @param vmc the WEKA ROC curve panel
      */
     private void showROCPanel(ThresholdVisualizePanel vmc) {
         final JFrame jf = new JFrame("Weka Classifier Visualize: " + rocName + "-" + classifier.getClass().getSimpleName());
