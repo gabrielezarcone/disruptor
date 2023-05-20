@@ -1,5 +1,6 @@
 package roc;
 
+import costants.Colors;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -58,11 +59,13 @@ public class ROCGenerator {
         boolean first = true;
         ThresholdVisualizePanel vmc = new ThresholdVisualizePanel();
 
-        for(Instances trainSet : trainSetList){
+        for(int i=0; i<trainSetList.size(); i++){
+        Instances trainSet = trainSetList.get(i);
             try {
+                setCurveColor(Colors.distinctColors[i]);
 
                 Instances rocCurve = generateROC(trainSet);
-                PlotData2D plotData2D = generatePlotData2D(rocCurve);
+                PlotData2D plotData2D = generatePlotData2D(rocCurve, trainSet.relationName());
                 setupROCPanel(vmc, rocCurve, plotData2D);
 
                 if (first)
@@ -124,14 +127,14 @@ public class ROCGenerator {
     /**
      * Generate plottable data of the ROC Curve
      * @param rocCurve ROC curve to plot
+     * @param plotName
      * @return
      */
-    private PlotData2D generatePlotData2D(Instances rocCurve) {
+    private PlotData2D generatePlotData2D(Instances rocCurve, String plotName) {
         PlotData2D plotData2D = new PlotData2D(rocCurve);
-        plotData2D.setPlotName(rocCurve.relationName());
+        plotData2D.setPlotName(plotName);
         plotData2D.addInstanceNumberAttribute();
         if(curveColor!=null){
-            //TODO custom color
             plotData2D.setCustomColour(curveColor);
         }
         return plotData2D;
@@ -156,7 +159,7 @@ public class ROCGenerator {
      */
     private void showROCPanel(ThresholdVisualizePanel vmc) {
         final JFrame jf = new JFrame("Weka Classifier Visualize: " + rocName + "-" + classifier.getClass().getSimpleName());
-        jf.setSize(500,400);
+        jf.setSize(1000,800);
         jf.getContentPane().setLayout(new BorderLayout());
 
         jf.getContentPane().add(vmc, BorderLayout.CENTER);

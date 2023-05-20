@@ -222,7 +222,6 @@ public class Disruptor implements Callable<Integer> {
                     log.debug("Started ROC for attack {} and classifier {}", attack.getClass().getSimpleName(), classifier.getClass().getSimpleName());
                     ROCGenerator rocGenerator = new ROCGenerator(testSet, classifier, attackName);
                     rocGenerator.visualizeROCCurves(perturbedDatasets);
-                    //TODO rocGenerator.setCurveColor(); https://stackoverflow.com/questions/470690/how-to-automatically-generate-n-distinct-colors
                     log.debug("Finished ROC for attack {} and classifier {}", attack.getClass().getSimpleName(), classifier.getClass().getSimpleName());
                 }
             }
