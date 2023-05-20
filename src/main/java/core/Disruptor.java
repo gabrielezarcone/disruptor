@@ -10,11 +10,17 @@ import experiment.DisruptorExperiment;
 import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;
 import properties.versionproviders.DisruptorVersionProvider;
+import roc.ROCGenerator;
 import saver.Exporter;
 import util.ArffUtil;
 import util.CSVUtil;
 import util.ExceptionUtil;
 import util.InstancesUtil;
+import weka.classifiers.Classifier;
+import weka.classifiers.bayes.BayesNet;
+import weka.classifiers.bayes.NaiveBayes;
+import weka.classifiers.trees.J48;
+import weka.classifiers.trees.RandomForest;
 import weka.core.Instances;
 import weka.core.converters.ArffSaver;
 import weka.core.converters.CSVSaver;
@@ -39,6 +45,7 @@ public class Disruptor implements Callable<Integer> {
     private String folderName = "output";
     private String experimentFolderName = "experiment";
     private ArrayList<Attack> attacksList = new ArrayList<>();
+    private ArrayList<Classifier> classifiersList = new ArrayList<>();
     private ArrayList<Instances> perturbedDatasets = new ArrayList<>();
     private Instances testSet;
 
@@ -90,10 +97,18 @@ public class Disruptor implements Callable<Integer> {
             paramLabel = "EXP")
     private boolean experimenter;
 
+    @CommandLine.Option(
+            names = {"-r", "--roc"},
+            description = "Show the ROC curves for each attack\n",
+            paramLabel = "ROC")
+    private static boolean roc;
+
 
     public static void main(String[] args) {
         int exitCode = new CommandLine(new Disruptor()).execute(args);
-        System.exit(exitCode);
+        if(!roc){
+            System.exit(exitCode);
+        }
     }
 
 
@@ -128,8 +143,9 @@ public class Disruptor implements Callable<Integer> {
         // Export test set
         exportTestSet(testSet);
 
-        // Populate the attacks list
+        // Populate the attacks and the classifiers lists
         populateAttacksList(trainset);
+        populateClassifiersList();
 
         // Attack main loop
         performAttacks(trainset, attacksList, capacitiesList);
@@ -155,6 +171,15 @@ public class Disruptor implements Callable<Integer> {
         attacksList.add(new SideBySideOnTop(dataset, 1));
         attacksList.add(new OverlayCentroids(dataset));
     }
+    /**
+     * Fill the classifiers list with a subset of classifiers
+     */
+    private void populateClassifiersList() {
+        classifiersList.add( new RandomForest() );
+        classifiersList.add( new NaiveBayes() );
+        classifiersList.add( new J48() );
+        classifiersList.add( new BayesNet() );
+    }
 
     /**
      * Perform all the attacks defined in the attacksList using all the capacities defined in the capacitiesList
@@ -164,32 +189,48 @@ public class Disruptor implements Callable<Integer> {
      */
     private void performAttacks(Instances trainingSet, ArrayList<Attack> attacksList, ArrayList<Double> capacitiesList){
         // Nested loop between attacks list and capacities list
-        attacksList.forEach( attack -> capacitiesList.forEach(capacity -> {
+        attacksList.forEach( attack -> {
+            String attackName = trainingSet.relationName() + "_" + attack.getClass().getSimpleName();
+            // save in a list all the perturbed datasets of this attack
+            ArrayList<Instances> attackPerturbedDatasets = new ArrayList<>();
+            capacitiesList.forEach(capacity -> {
 
-            // Define an attack code unique for this attack run
-            String attackCode = trainingSet.relationName() + "_" + attack.getClass().getSimpleName() + "_" + capacity;
+                // Define an attack code unique for this attack run
+                String attackCode = attackName + "_" + capacity;
 
-            // Perform this attack with this capacity
-            Instances trainingSetCopy = new Instances(trainingSet);
-            attack.setTarget( trainingSetCopy );
-            attack.setCapacity( capacity );
-            Instances perturbedInstances = attack.attack();
-            perturbedInstances.setRelationName(attackCode);
+                // Perform this attack with this capacity
+                Instances trainingSetCopy = new Instances(trainingSet);
+                attack.setTarget( trainingSetCopy );
+                attack.setCapacity( capacity );
+                Instances perturbedInstances = attack.attack();
+                perturbedInstances.setRelationName(attackCode);
 
-            if(experimenter){
-                perturbedDatasets.add(perturbedInstances);
+                if(experimenter){
+                    perturbedDatasets.add(perturbedInstances);
+                }
+                if(roc){
+                    attackPerturbedDatasets.add(perturbedInstances);
+                }
+
+                // Export the perturbed instances
+                try {
+                    exportPerturbedDataset(attackCode, perturbedInstances);
+                } catch (Exception e) {
+                    log.error("Problem during the export of the perturbed dataset");
+                    log.debug(attackCode);
+                    ExceptionUtil.logException(e, log);
+                }
+
+            });
+            if(roc){
+                for(Classifier classifier : classifiersList){
+                    log.debug("Started ROC for attack {} and classifier {}", attack.getClass().getSimpleName(), classifier.getClass().getSimpleName());
+                    ROCGenerator rocGenerator = new ROCGenerator(testSet, classifier, attackName);
+                    rocGenerator.visualizeROCCurves(attackPerturbedDatasets);
+                    log.debug("Finished ROC for attack {} and classifier {}", attack.getClass().getSimpleName(), classifier.getClass().getSimpleName());
+                }
             }
-
-            // Export the perturbed instances
-            try {
-                exportPerturbedDataset(attackCode, perturbedInstances);
-            } catch (Exception e) {
-                log.error("Problem during the export of the perturbed dataset");
-                log.debug(attackCode);
-                ExceptionUtil.logException(e, log);
-            }
-
-        }));
+        });
     }
 
     /**
@@ -237,6 +278,7 @@ public class Disruptor implements Callable<Integer> {
      */
     private void evaluateAttacks() throws Exception {
         DisruptorExperiment experiment = new DisruptorExperiment(perturbedDatasets, trainPercentage, folderName);
+        experiment.setClassifiersList(classifiersList);
         experiment.start();
     }
 }
