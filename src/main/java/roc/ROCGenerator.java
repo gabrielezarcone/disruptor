@@ -115,12 +115,11 @@ public class ROCGenerator {
      * Create the panel to show the ROC curve
      * @param rocCurve ROC curve to show
      * @return the panel
-     * @throws Exception
      */
-    private void decorateROCPanel(ThresholdVisualizePanel vmc, Instances rocCurve) throws Exception {
+    private void decorateROCPanel(ThresholdVisualizePanel vmc, Instances rocCurve){
         double rocArea = ThresholdCurve.getROCArea(rocCurve);
         String rocAreaString = Utils.doubleToString(rocArea, 4);
-        vmc.setROCString("(Area under ROC = " + rocAreaString + ")");
+        vmc.setROCString(vmc.getROCString()+"\n(Area under ROC = " + rocAreaString + ")");
         vmc.setName( rocCurve.relationName() );
     }
 
@@ -131,8 +130,11 @@ public class ROCGenerator {
      * @return
      */
     private PlotData2D generatePlotData2D(Instances rocCurve, String plotName) {
+        double rocArea = ThresholdCurve.getROCArea(rocCurve);
+        String rocAreaString = Utils.doubleToString(rocArea, 4);
+
         PlotData2D plotData2D = new PlotData2D(rocCurve);
-        plotData2D.setPlotName(plotName);
+        plotData2D.setPlotName( plotName + "\n(A=" + rocAreaString + ")" );
         plotData2D.addInstanceNumberAttribute();
         if(curveColor!=null){
             plotData2D.setCustomColour(curveColor);
@@ -159,7 +161,7 @@ public class ROCGenerator {
      */
     private void showROCPanel(ThresholdVisualizePanel vmc) {
         final JFrame jf = new JFrame("Weka Classifier Visualize: " + rocName + "-" + classifier.getClass().getSimpleName());
-        jf.setSize(1000,1000);
+        jf.setSize(1500,1000);
         jf.getContentPane().setLayout(new BorderLayout());
 
         jf.getContentPane().add(vmc, BorderLayout.CENTER);
