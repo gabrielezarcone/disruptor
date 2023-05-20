@@ -191,6 +191,8 @@ public class Disruptor implements Callable<Integer> {
         // Nested loop between attacks list and capacities list
         attacksList.forEach( attack -> {
             String attackName = trainingSet.relationName() + "_" + attack.getClass().getSimpleName();
+            // save in a list all the perturbed datasets of this attack
+            ArrayList<Instances> attackPerturbedDatasets = new ArrayList<>();
             capacitiesList.forEach(capacity -> {
 
                 // Define an attack code unique for this attack run
@@ -203,8 +205,11 @@ public class Disruptor implements Callable<Integer> {
                 Instances perturbedInstances = attack.attack();
                 perturbedInstances.setRelationName(attackCode);
 
-                if(experimenter || roc){
+                if(experimenter){
                     perturbedDatasets.add(perturbedInstances);
+                }
+                if(roc){
+                    attackPerturbedDatasets.add(perturbedInstances);
                 }
 
                 // Export the perturbed instances
@@ -221,7 +226,7 @@ public class Disruptor implements Callable<Integer> {
                 for(Classifier classifier : classifiersList){
                     log.debug("Started ROC for attack {} and classifier {}", attack.getClass().getSimpleName(), classifier.getClass().getSimpleName());
                     ROCGenerator rocGenerator = new ROCGenerator(testSet, classifier, attackName);
-                    rocGenerator.visualizeROCCurves(perturbedDatasets);
+                    rocGenerator.visualizeROCCurves(attackPerturbedDatasets);
                     log.debug("Finished ROC for attack {} and classifier {}", attack.getClass().getSimpleName(), classifier.getClass().getSimpleName());
                 }
             }

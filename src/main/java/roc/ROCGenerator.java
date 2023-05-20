@@ -60,7 +60,7 @@ public class ROCGenerator {
         ThresholdVisualizePanel vmc = new ThresholdVisualizePanel();
 
         for(int i=0; i<trainSetList.size(); i++){
-        Instances trainSet = trainSetList.get(i);
+            Instances trainSet = trainSetList.get(i);
             try {
                 setCurveColor(Colors.distinctColors[i]);
 
@@ -159,7 +159,7 @@ public class ROCGenerator {
      */
     private void showROCPanel(ThresholdVisualizePanel vmc) {
         final JFrame jf = new JFrame("Weka Classifier Visualize: " + rocName + "-" + classifier.getClass().getSimpleName());
-        jf.setSize(1000,800);
+        jf.setSize(1000,1000);
         jf.getContentPane().setLayout(new BorderLayout());
 
         jf.getContentPane().add(vmc, BorderLayout.CENTER);
