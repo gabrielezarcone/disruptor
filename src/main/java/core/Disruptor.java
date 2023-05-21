@@ -4,7 +4,7 @@ package core;
 import attacks.Attack;
 import attacks.custom.OverlayCentroids;
 import attacks.custom.SideBySide;
-import attacks.custom.SideBySideOnTop;
+import attacks.custom.SideBySideDuplicate;
 import attacks.labelflipping.RandomLabelFlipping;
 import experiment.DisruptorExperiment;
 import lombok.extern.slf4j.Slf4j;
@@ -106,6 +106,7 @@ public class Disruptor implements Callable<Integer> {
 
     public static void main(String[] args) {
         int exitCode = new CommandLine(new Disruptor()).execute(args);
+        log.info("--- DISRUPTOR ELABORATION FINISHED ---");
         if(!roc){
             System.exit(exitCode);
         }
@@ -223,12 +224,15 @@ public class Disruptor implements Callable<Integer> {
 
             });
             if(roc){
+                log.info("Started ROC curves visualization for attack {}", attack.getClass().getSimpleName());
+                log.info("Running...");
                 for(Classifier classifier : classifiersList){
                     log.debug("Started ROC for attack {} and classifier {}", attack.getClass().getSimpleName(), classifier.getClass().getSimpleName());
                     ROCGenerator rocGenerator = new ROCGenerator(testSet, classifier, attackName);
                     rocGenerator.visualizeROCCurves(attackPerturbedDatasets);
                     log.debug("Finished ROC for attack {} and classifier {}", attack.getClass().getSimpleName(), classifier.getClass().getSimpleName());
                 }
+                log.info("Finished ROC curves visualization for attack {}", attack.getClass().getSimpleName());
             }
         });
     }
