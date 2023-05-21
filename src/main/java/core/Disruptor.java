@@ -168,7 +168,7 @@ public class Disruptor implements Callable<Integer> {
     private void populateAttacksList(Instances dataset) {
         attacksList.add(new RandomLabelFlipping(dataset));
         attacksList.add(new SideBySide(dataset, 1));
-        attacksList.add(new SideBySideOnTop(dataset, 1));
+        attacksList.add(new SideBySideDuplicate(dataset));
         attacksList.add(new OverlayCentroids(dataset));
     }
     /**
