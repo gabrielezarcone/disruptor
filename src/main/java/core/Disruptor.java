@@ -5,6 +5,7 @@ import attacks.Attack;
 import attacks.custom.OverlayCentroids;
 import attacks.custom.SideBySide;
 import attacks.custom.SideBySideDuplicate;
+import attacks.labelflipping.LabelFlipping;
 import attacks.labelflipping.RandomLabelFlipping;
 import experiment.DisruptorExperiment;
 import lombok.extern.slf4j.Slf4j;
@@ -167,6 +168,7 @@ public class Disruptor implements Callable<Integer> {
      * @param dataset dataset to perturbate during the attacks
      */
     private void populateAttacksList(Instances dataset) {
+        attacksList.add(new LabelFlipping(dataset));
         attacksList.add(new RandomLabelFlipping(dataset));
         attacksList.add(new SideBySide(dataset, 1));
         attacksList.add(new SideBySideDuplicate(dataset));
