@@ -103,13 +103,15 @@ public class ApplyFilter {
      * Randomize the instances
      *
      * @param instances Instances to randomize
+     * @param seed the seed used for the randomization
      * @return the instances randomized
      * @throws Exception if problems applying the filter
      */
-    public static Instances randomize(Instances instances) throws Exception {
+    public static Instances randomize(Instances instances, int seed) throws Exception {
         Instances instancesCopy = new Instances(instances);
 
         Randomize randomized = new Randomize();
+        randomized.setRandomSeed(seed);
         randomized.setInputFormat(instancesCopy);
 
         return Filter.useFilter( instancesCopy, randomized );

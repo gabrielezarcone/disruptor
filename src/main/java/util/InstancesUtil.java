@@ -153,6 +153,20 @@ public class InstancesUtil {
      * @throws IllegalArgumentException if trainPercentage is not between 0 and 1
      */
     public static Instances[] splitTrainTest( Instances dataset,  double trainPercentage, boolean toRandomize ) throws Exception {
+        return splitTrainTest(dataset, trainPercentage, toRandomize, 1);
+    }
+
+    /**
+     *
+     * @param dataset Dataset to split
+     * @param trainPercentage Percentage of the dataset to dedicate to the train set.
+     * @param toRandomize true if the dataset should be randomized
+     * @param seed seed used to randomize
+     * @return The first element of the array is the TRAIN set. The second element of the array is the TEST set
+     * @throws Exception if problems applying the RemovePercentage weka filter
+     * @throws IllegalArgumentException if trainPercentage is not between 0 and 1
+     */
+    public static Instances[] splitTrainTest( Instances dataset,  double trainPercentage, boolean toRandomize, int seed ) throws Exception {
         // Check the trainPercentage
         if(trainPercentage<0 || trainPercentage>1){
             throw new IllegalArgumentException("The train percentage should be a double between 0 and 1");
@@ -166,7 +180,7 @@ public class InstancesUtil {
 
         // Randomize the instances
         if (toRandomize){
-            instances = ApplyFilter.randomize(instances);
+            instances = ApplyFilter.randomize(instances, seed);
         }
 
         // Split train and test
