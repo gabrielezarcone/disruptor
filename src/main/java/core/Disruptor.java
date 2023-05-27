@@ -43,12 +43,17 @@ import java.util.concurrent.Callable;
 )
 public class Disruptor implements Callable<Integer> {
 
-    private String folderName = "output";
-    private String experimentFolderName = "experiment";
+    public static final String PARENT_FOLDER = "output";
+    public static final String EXPERIMENT_FOLDER = "experiment";
+
+    private String folderName = PARENT_FOLDER;
+    private String experimentFolderName = EXPERIMENT_FOLDER;
     private ArrayList<Attack> attacksList = new ArrayList<>();
     private ArrayList<Classifier> classifiersList = new ArrayList<>();
     private ArrayList<Instances> perturbedDatasets = new ArrayList<>();
     private Instances testSet;
+    private final Exporter arffExport = new Exporter( new ArffSaver() );
+    private final Exporter csvExport = new Exporter( new CSVSaver() );
 
     // CLI PARAMS ---------------------------------------------------------------------------------------------------------------------------
     @CommandLine.Parameters(
@@ -104,10 +109,16 @@ public class Disruptor implements Callable<Integer> {
             paramLabel = "ROC")
     private static boolean roc;
 
+    @CommandLine.Option(
+            names = {"-R", "--runs"},
+            description = "Define the number of runs for each attack\nDefault: 10\n",
+            paramLabel = "NUMBER_OF_RUNS",
+            defaultValue="10")
+    private static int runs;
+
 
     public static void main(String[] args) {
         int exitCode = new CommandLine(new Disruptor()).execute(args);
-        log.info("--- DISRUPTOR ELABORATION FINISHED ---");
         if(!roc){
             System.exit(exitCode);
         }
@@ -127,34 +138,46 @@ public class Disruptor implements Callable<Integer> {
             dataset = CSVUtil.readCSVFile(datasetFile, className);
         }
 
-        if(experimenter){
-            // To use as a reference, add the input dataset as the first list element
-            perturbedDatasets.add(dataset);
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HHmmss");
+        String startDate = simpleDateFormat.format(new Date());
+
+        for( int run=0; run<runs; run++ ){
+
+            log.info("\n\nRUN {} ----------------------------------\n", run);
+
+            // Creates a copy of the starting instances otherwise a test set is added at every run growing exponentially
+            Instances runDataset = new Instances(dataset);
+
+            if(experimenter){
+                // To use as a reference, add the input dataset as the first list element
+                perturbedDatasets.add(runDataset);
+            }
+
+            // Set folder name
+            folderName = PARENT_FOLDER + File.separator + startDate + File.separator + "run" + run;
+
+            // Split Train and Test set
+            Instances[] splitTrainTest = InstancesUtil.splitTrainTest(runDataset, trainPercentage, run);
+            Instances trainset = splitTrainTest[0];
+            testSet = splitTrainTest[1];
+
+            // Export test set
+            exportTestSet(testSet);
+
+            // Populate the attacks and the classifiers lists
+            populateAttacksList(trainset);
+            populateClassifiersList();
+
+            // Attack main loop
+            performAttacks(trainset, attacksList, capacitiesList);
+
+            if(experimenter){
+                // Append the test set to each dataset
+                appendTestSet(true);
+            }
         }
 
-        // Set folder name
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HHmmss");
-        folderName = folderName + File.separator + simpleDateFormat.format(new Date());
-        experimentFolderName = folderName + File.separator + experimentFolderName;
-
-        // Split Train and Test set
-        Instances[] splitTrainTest = InstancesUtil.splitTrainTest(dataset, trainPercentage, true);
-        Instances trainset = splitTrainTest[0];
-        testSet = splitTrainTest[1];
-
-        // Export test set
-        exportTestSet(testSet);
-
-        // Populate the attacks and the classifiers lists
-        populateAttacksList(trainset);
-        populateClassifiersList();
-
-        // Attack main loop
-        performAttacks(trainset, attacksList, capacitiesList);
-
         if(experimenter){
-            // Append the test set to each dataset
-            appendTestSet();
             // Evaluate the effectiveness of the attacks
             evaluateAttacks();
         }
@@ -168,6 +191,7 @@ public class Disruptor implements Callable<Integer> {
      * @param dataset dataset to perturbate during the attacks
      */
     private void populateAttacksList(Instances dataset) {
+        attacksList.clear();
         attacksList.add(new LabelFlipping(dataset));
         attacksList.add(new RandomLabelFlipping(dataset));
         attacksList.add(new SideBySide(dataset, 1));
@@ -178,6 +202,7 @@ public class Disruptor implements Callable<Integer> {
      * Fill the classifiers list with a subset of classifiers
      */
     private void populateClassifiersList() {
+        classifiersList.clear();
         classifiersList.add( new RandomForest() );
         classifiersList.add( new NaiveBayes() );
         classifiersList.add( new J48() );
@@ -193,10 +218,14 @@ public class Disruptor implements Callable<Integer> {
     private void performAttacks(Instances trainingSet, ArrayList<Attack> attacksList, ArrayList<Double> capacitiesList){
         // Nested loop between attacks list and capacities list
         attacksList.forEach( attack -> {
-            String attackName = trainingSet.relationName() + "_" + attack.getClass().getSimpleName();
+            String attackClassName = attack.getClass().getSimpleName();
+            log.info("Started attack {}", attackClassName);
+            String attackName = trainingSet.relationName() + "_" + attackClassName;
             // save in a list all the perturbed datasets of this attack
             ArrayList<Instances> attackPerturbedDatasets = new ArrayList<>();
             capacitiesList.forEach(capacity -> {
+
+                log.info("\tcapacity: {}", capacity);
 
                 // Define an attack code unique for this attack run
                 String attackCode = attackName + "_" + capacity;
@@ -226,15 +255,15 @@ public class Disruptor implements Callable<Integer> {
 
             });
             if(roc){
-                log.info("Started ROC curves visualization for attack {}", attack.getClass().getSimpleName());
+                log.info("Started ROC curves visualization for attack {}", attackClassName);
                 log.info("Running...");
                 for(Classifier classifier : classifiersList){
-                    log.debug("Started ROC for attack {} and classifier {}", attack.getClass().getSimpleName(), classifier.getClass().getSimpleName());
+                    log.debug("Started ROC for attack {} and classifier {}", attackClassName, classifier.getClass().getSimpleName());
                     ROCGenerator rocGenerator = new ROCGenerator(testSet, classifier, attackName);
                     rocGenerator.visualizeROCCurves(attackPerturbedDatasets);
-                    log.debug("Finished ROC for attack {} and classifier {}", attack.getClass().getSimpleName(), classifier.getClass().getSimpleName());
+                    log.debug("Finished ROC for attack {} and classifier {}", attackClassName, classifier.getClass().getSimpleName());
                 }
-                log.info("Finished ROC curves visualization for attack {}", attack.getClass().getSimpleName());
+                log.info("Finished ROC curves visualization for attack {}", attackClassName);
             }
         });
     }
@@ -247,30 +276,39 @@ public class Disruptor implements Callable<Integer> {
      */
     private void exportPerturbedDataset(String attackCode, Instances perturbedDataset) throws IOException {
         // Export ARFF
-        Exporter arffExport = new Exporter( new ArffSaver() );
         arffExport.exportInFolder( perturbedDataset, folderName, attackCode );
         // Export CSV
-        Exporter csvExport = new Exporter( new CSVSaver() );
         csvExport.exportInFolder( perturbedDataset, folderName, attackCode );
     }
 
     private void exportTestSet(Instances testSet) throws IOException {
         // Export ARFF
-        Exporter arffExport = new Exporter( new ArffSaver() );
         arffExport.exportInFolder( testSet, folderName, testSet.relationName()+"_TEST" );
         // Export CSV
-        Exporter csvExport = new Exporter( new CSVSaver() );
         csvExport.exportInFolder( testSet, folderName, testSet.relationName()+"_TEST" );
+    }
+
+    private void exportTrainTestSet(Instances trainTestSet) throws IOException {
+        // Export ARFF
+        arffExport.exportInFolder( trainTestSet, folderName + File.separator + "trainTest", trainTestSet.relationName());
+        // Export CSV
+        csvExport.exportInFolder( trainTestSet, folderName + File.separator + "trainTest", trainTestSet.relationName() );
     }
 
 
     /**
      * Append the test set to every dataset present in perturbedDatasets
+     * @param export true if the train+test file should be exported
      */
-    private void appendTestSet(){
+    private void appendTestSet(boolean export){
         perturbedDatasets.forEach( dataset -> {
             try {
                 InstancesUtil.addAllInstances(dataset, testSet);
+
+                if(export){
+                    exportTrainTestSet(dataset);
+                }
+
             } catch (Exception e) {
                 log.error("Problem appending the test set to the train set");
                 ExceptionUtil.logException(e, log);

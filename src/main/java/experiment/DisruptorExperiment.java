@@ -128,7 +128,7 @@ public class DisruptorExperiment {
 
         // Set the runs number:
         experiment.setRunLower(1);
-        experiment.setRunUpper(10);
+        experiment.setRunUpper(1);
 
         // Set classifiers
         setupClassifiers();
@@ -171,10 +171,11 @@ public class DisruptorExperiment {
 
     private void setupDatasets() {
         DefaultListModel<File> model = new DefaultListModel<>();
-        perturbedDatasets.forEach( perturbedDataset -> {
+        for ( int i=0; i<perturbedDatasets.size(); i++){
+            Instances perturbedDataset = perturbedDatasets.get(i);
             Exporter arffExport = new Exporter( new ArffSaver() );
             try {
-                arffExport.exportInFolder( perturbedDataset, experimentFolderName, perturbedDataset.relationName()+"_EXP" );
+                arffExport.exportInFolder( perturbedDataset, experimentFolderName, perturbedDataset.relationName()+"_EXP_"+i );
                 File datasetFile = arffExport.getExportedFile();
                 model.addElement(datasetFile);
             } catch (IOException e) {
@@ -182,7 +183,7 @@ public class DisruptorExperiment {
                 log.debug("dataset relation name: " + perturbedDataset.relationName() );
                 ExceptionUtil.logException(e, log);
             }
-        } );
+        }
         experiment.setDatasets(model);
     }
 
@@ -248,9 +249,9 @@ public class DisruptorExperiment {
 
     private void setupTesterComparisionField(PairedTTester tester, Instances result) throws Exception {
         if (classification)
-            tester.multiResultsetFull(0, result.attribute("Percent_correct").index());
+            tester.multiResultsetFull(result.attribute("Key_Dataset").index(), result.attribute("Percent_correct").index());
         else
-            tester.multiResultsetFull(0, result.attribute("Correlation_coefficient").index());
+            tester.multiResultsetFull(result.attribute("Key_Dataset").index(), result.attribute("Correlation_coefficient").index());
     }
 
     private void printResults(PairedTTester tester) {
