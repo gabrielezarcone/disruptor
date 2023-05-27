@@ -157,7 +157,7 @@ public class Disruptor implements Callable<Integer> {
             folderName = PARENT_FOLDER + File.separator + startDate + File.separator + "run" + run;
 
             // Split Train and Test set
-            Instances[] splitTrainTest = InstancesUtil.splitTrainTest(runDataset, trainPercentage, true, run);
+            Instances[] splitTrainTest = InstancesUtil.splitTrainTest(runDataset, trainPercentage, run);
             Instances trainset = splitTrainTest[0];
             testSet = splitTrainTest[1];
 

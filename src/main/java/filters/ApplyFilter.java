@@ -10,8 +10,8 @@ import weka.filters.unsupervised.attribute.Reorder;
 import weka.filters.unsupervised.attribute.SortLabels;
 import weka.filters.unsupervised.instance.Randomize;
 import weka.filters.unsupervised.instance.RemovePercentage;
+import weka.filters.unsupervised.instance.Resample;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class ApplyFilter {
@@ -135,6 +135,32 @@ public class ApplyFilter {
         numericToNominal.setAttributeIndicesArray( attributeIndexes );
 
         Instances filteredInstances = Filter.useFilter(instancesCopy, numericToNominal);
+        filteredInstances.setRelationName(relationName);
+        return filteredInstances;
+    }
+
+    /**
+     * Produces a random subsample of a dataset. Use invert and the same seed to create test and train set
+     *
+     * @param instances Instances
+     * @param sampleSizepercent the subsample set size, between 0 and 100
+     * @param invert invert the percentage
+     * @param seed the seed for the random selection
+     * @return the subsample instances
+     * @throws Exception if problems applying the filter
+     */
+    public static Instances resampleWithoutReplacement(Instances instances, double sampleSizepercent, boolean invert, int seed) throws Exception {
+        String relationName = instances.relationName();
+        Instances instancesCopy = new Instances(instances);
+
+        Resample resample = new Resample();
+        resample.setInputFormat(instancesCopy);
+        resample.setNoReplacement(true);
+        resample.setSampleSizePercent(sampleSizepercent);
+        resample.setInvertSelection(invert);
+        resample.setRandomSeed(seed);
+
+        Instances filteredInstances = Filter.useFilter(instancesCopy, resample);
         filteredInstances.setRelationName(relationName);
         return filteredInstances;
     }

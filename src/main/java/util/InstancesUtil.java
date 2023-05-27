@@ -147,13 +147,12 @@ public class InstancesUtil {
      *
      * @param dataset Dataset to split
      * @param trainPercentage Percentage of the dataset to dedicate to the train set.
-     * @param toRandomize true if the dataset should be randomized
      * @return The first element of the array is the TRAIN set. The second element of the array is the TEST set
      * @throws Exception if problems applying the RemovePercentage weka filter
      * @throws IllegalArgumentException if trainPercentage is not between 0 and 1
      */
-    public static Instances[] splitTrainTest( Instances dataset,  double trainPercentage, boolean toRandomize ) throws Exception {
-        return splitTrainTest(dataset, trainPercentage, toRandomize, 1);
+    public static Instances[] splitTrainTest( Instances dataset,  double trainPercentage ) throws Exception {
+        return splitTrainTest(dataset, trainPercentage, 1);
     }
 
     /**
@@ -166,7 +165,7 @@ public class InstancesUtil {
      * @throws Exception if problems applying the RemovePercentage weka filter
      * @throws IllegalArgumentException if trainPercentage is not between 0 and 1
      */
-    public static Instances[] splitTrainTest( Instances dataset,  double trainPercentage, boolean toRandomize, int seed ) throws Exception {
+    public static Instances[] splitTrainTest( Instances dataset,  double trainPercentage, int seed ) throws Exception {
         // Check the trainPercentage
         if(trainPercentage<0 || trainPercentage>1){
             throw new IllegalArgumentException("The train percentage should be a double between 0 and 1");
@@ -178,14 +177,9 @@ public class InstancesUtil {
         String relationName = dataset.relationName();
         Instances[] result = new Instances[2];
 
-        // Randomize the instances
-        if (toRandomize){
-            instances = ApplyFilter.randomize(instances, seed);
-        }
-
         // Split train and test
-        Instances trainSet = ApplyFilter.removePercentage(instances, trainPercentage*100, true);
-        Instances testSet = ApplyFilter.removePercentage(instances, trainPercentage*100, false);
+        Instances trainSet = ApplyFilter.resampleWithoutReplacement(instances, trainPercentage*100, false, seed);
+        Instances testSet = ApplyFilter.resampleWithoutReplacement(instances, trainPercentage*100, true, seed);
 
         // Maintain the start relation name even after the filter
         trainSet.setRelationName(relationName);
