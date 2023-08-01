@@ -115,6 +115,21 @@ public class InstancesUtil {
         return bucketsMap;
     }
 
+
+    public static HashMap<Object, Instances> bucketsByClassInstances(Instances perturbedInstances) {
+        ArrayList<Object> classValuesList = Collections.list(perturbedInstances.classAttribute().enumerateValues());
+        HashMap<Object, Instances> bucketsMap = new HashMap<>();
+        for( Object value : classValuesList){
+            bucketsMap.put(value, new Instances(perturbedInstances, 0));
+        }
+        ArrayList<Instance> instancesList = Collections.list(perturbedInstances.enumerateInstances());
+        for( Instance instance : instancesList){
+            Object classValueObject = InstanceUtil.getClassValueObject(instance);
+            bucketsMap.get(classValueObject).add(instance);
+        }
+        return bucketsMap;
+    }
+
     /**
      * @return the class with the most instances
      */
