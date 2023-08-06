@@ -106,6 +106,14 @@ public class Disruptor implements Callable<Integer> {
     private ArrayList<Double> capacitiesList = new ArrayList<>();
 
     @CommandLine.Option(
+            names = {"-K", "--knowledge"},
+            description= "Comma-separated knowledge for the attacks.\nThe knowledge is a percentage between 0 and 1.\ne.g. -K 0.2,0.5,1\nDefault: 1\n",
+            paramLabel="KNOWLEDGE",
+            defaultValue="1",
+            split = "," )
+    private ArrayList<Double> knowledgeList = new ArrayList<>();
+
+    @CommandLine.Option(
             names = {"-t", "--train-percent"},
             description= "Percentage of the training set.\nSet to 1 if they want to use all the dataset as training set \nThe percentage is a number between 0 and 1.\nDefault: 0.8\n",
             paramLabel="TRAIN_PERCENTAGE",
@@ -266,7 +274,7 @@ public class Disruptor implements Callable<Integer> {
                 log.info("\tcapacity: {}", capacity);
 
                 // Define an attack code unique for this attack run
-                String attackCode = attackName + "_" + attributeSelectorAlgorithm.getName()  + "_" + capacity;
+                String attackCode = attackName + "_" + attributeSelectorAlgorithm.getName()  + "_C" + capacity;
 
                 // Perform this attack with this capacity
                 Instances trainingSetCopy = new Instances(trainingSet);
@@ -389,10 +397,15 @@ public class Disruptor implements Callable<Integer> {
      * and store the ranked attributes in the selectedFeatureMap
      */
     public void performFeatureSelection(){
-        for(AbstractAttributeSelector fsAlgorithm : featureSelectionAlgorithms){
-            fsAlgorithm.eval();
-            double[][] rankedAttributes = fsAlgorithm.getRankedAttributes();
-            selectedFeatureMap.put( fsAlgorithm, rankedAttributes );
-        }
+        knowledgeList.forEach( knowledge -> {
+
+            for(AbstractAttributeSelector fsAlgorithm : featureSelectionAlgorithms){
+                fsAlgorithm.setKnowledge(knowledge);
+                fsAlgorithm.eval();
+                double[][] rankedAttributes = fsAlgorithm.getRankedAttributes();
+                selectedFeatureMap.put( fsAlgorithm, rankedAttributes );
+            }
+
+        });
     }
 }

@@ -2,13 +2,17 @@ package attributeselection;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
+import weka.core.Attribute;
 import weka.core.Instances;
 
+import java.util.Arrays;
 import java.util.HashMap;
 
+
+@Slf4j
 public abstract class AbstractAttributeSelector {
 
-    @Getter
     @Setter
     private Instances targetInstances;
     @Getter @Setter
@@ -17,9 +21,11 @@ public abstract class AbstractAttributeSelector {
     private double[][] rankedAttributes;
     @Getter @Setter
     private String name = this.getClass().getSimpleName();
+    @Getter @Setter
+    private double knowledge = 1;
 
     protected AbstractAttributeSelector(Instances instances){
-        this.targetInstances = instances;
+        this.targetInstances = new Instances(instances);
     }
 
     /**
@@ -35,8 +41,26 @@ public abstract class AbstractAttributeSelector {
      * Start the feature selection
      */
     public void eval() {
+        reduceAttributesByKnowledge();
         double[][] attrRanks = selectAttributes();
+        log.debug("Selected features: {}", Arrays.deepToString(attrRanks));
         populateFields(attrRanks);
+    }
+
+    /**
+     * Feature selection must be performed only on the percentage of attributes defined by the knowledge attribute.
+     * This method, thus, removes attributes from targetInstances in order to match the knowledge before the feature selection.
+     */
+    protected void reduceAttributesByKnowledge() {
+        int numAttributes = targetInstances.numAttributes();
+        int numAttributesToConsider = (int) (numAttributes * knowledge);
+        int numAttributesToDelete = numAttributes - numAttributesToConsider - 1; //-1 to not count the class feature
+        for (int i=0; i<numAttributesToDelete; i++){
+            Attribute currentAttribute = targetInstances.attribute(i);
+            if(currentAttribute != targetInstances.classAttribute()){
+                targetInstances.deleteAttributeAt(i);
+            }
+        }
     }
 
     /**
