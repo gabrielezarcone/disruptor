@@ -2,11 +2,10 @@ package core;
 
 
 import attacks.Attack;
-import attacks.custom.OverlayCentroids;
-import attacks.custom.SideBySide;
-import attacks.custom.SideBySideDuplicate;
-import attacks.labelflipping.LabelFlipping;
-import attacks.labelflipping.RandomLabelFlipping;
+import attacks.horizontal.OppositeAttack;
+import attacks.horizontal.labelflipping.LabelFlipping;
+import attacks.horizontal.labelflipping.RandomLabelFlipping;
+import attacks.vertical.*;
 import experiment.DisruptorExperiment;
 import attributeselection.AbstractAttributeSelector;
 import attributeselection.InfoGainEval;
@@ -237,11 +236,41 @@ public class Disruptor implements Callable<Integer> {
      */
     private void populateAttacksList(Instances dataset, double[][] selectedFeatures) {
         attacksList.clear();
+
         attacksList.add(new LabelFlipping(dataset));
         attacksList.add(new RandomLabelFlipping(dataset));
-        attacksList.add(new SideBySide(dataset, 1));
-        attacksList.add(new SideBySideDuplicate(dataset));
-        attacksList.add(new OverlayCentroids(dataset));
+
+        NullAttack nullAttack = new NullAttack(dataset);
+        nullAttack.setFeatureSelected(selectedFeatures);
+        attacksList.add(nullAttack);
+
+        MeanAttack meanAttack = new MeanAttack(dataset);
+        meanAttack.setFeatureSelected(selectedFeatures);
+        attacksList.add(meanAttack);
+
+        MeanPerClassAttack meanPerClassAttack = new MeanPerClassAttack(dataset);
+        meanPerClassAttack.setFeatureSelected(selectedFeatures);
+        attacksList.add(meanPerClassAttack);
+
+        OppositeAttack oppositeAttack = new OppositeAttack(dataset);
+        oppositeAttack.setFeatureSelected(selectedFeatures);
+        attacksList.add(oppositeAttack);
+
+        OutOfRanging outOfRanging = new OutOfRanging(dataset);
+        outOfRanging.setFeatureSelected(selectedFeatures);
+        attacksList.add(outOfRanging);
+
+        RandomValueFromOtherClass randomValueFromOtherClass = new RandomValueFromOtherClass(dataset);
+        randomValueFromOtherClass.setFeatureSelected(selectedFeatures);
+        attacksList.add(randomValueFromOtherClass);
+
+        MiddlePoint middlePointAttack = new MiddlePoint(dataset);
+        middlePointAttack.setFeatureSelected(selectedFeatures);
+        attacksList.add(middlePointAttack);
+
+        MiddlePointByClass middlePointByClassAttack = new MiddlePointByClass(dataset);
+        middlePointByClassAttack.setFeatureSelected(selectedFeatures);
+        attacksList.add(middlePointByClassAttack);
     }
     /**
      * Fill the classifiers list with a subset of classifiers

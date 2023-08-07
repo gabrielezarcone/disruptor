@@ -1,0 +1,83 @@
+package attacks.vertical;
+
+import attacks.Attack;
+import lombok.Getter;
+import lombok.Setter;
+import util.InstancesUtil;
+import weka.core.Attribute;
+import weka.core.Instance;
+import weka.core.Instances;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+
+public class MiddlePointByClass extends Attack {
+
+    /**
+     * Multiplication factor used for moving the instances towards the middle point
+     * <p></p>
+     * es: instance is 3, the multiplication factor is 0.5 and the middle point is 5, then the new
+     * value is ((5-3)*0.5)+3 = 4 -> the instances is moved towards the middle point by the 50%
+     */
+    @Setter @Getter
+    private double multiplicationFactor = 0.5;
+
+    public MiddlePointByClass(Instances target) {
+        super(target);
+    }
+
+    public MiddlePointByClass(Instances target, double capacity, double knowledge) {
+        super(target, capacity, knowledge);
+    }
+
+    @Override
+    public Instances attack() {
+        Instances perturbedInstances = new Instances(getTarget());
+
+        // Perform the attack only in the part of the target specified by the capacity
+        for(int i=0; i<attackSize(); i++){
+            Instance instanceToAttack = perturbedInstances.instance(i);
+
+            // Calculate the next class value
+            double classValue = instanceToAttack.classValue();
+            double nextClassValueIndex = ( classValue + 1 ) % perturbedInstances.numClasses();
+            // Fetch the class obj to perform get from the bucket map
+            ArrayList<Object> classValuesList = Collections.list(perturbedInstances.classAttribute().enumerateValues());
+            Object nextClassValue = classValuesList.get((int) nextClassValueIndex);
+
+            // Perform the attack only for the selected feature
+            for( Attribute feature : getFeatureSelected() ){
+                double oldValue = instanceToAttack.value(feature);
+                double distanceFromMiddle = featureMiddlePoint(feature, nextClassValue) - oldValue;
+                double newValue = getMultiplicationFactor() * distanceFromMiddle + oldValue;
+                instanceToAttack.setValue(feature, newValue);
+            }
+
+            perturbedInstances.set(i, instanceToAttack);
+        }
+        return perturbedInstances;
+    }
+
+    @Override
+    public int evaluateAbility() {
+        return 0;
+    }
+
+    private double featureMiddlePoint(Attribute feature, Object classValue){
+
+        // create buckets of instances grouped by class value
+        HashMap<Object, Instances> bucketsMap = InstancesUtil.bucketsByClassInstances(getTarget());
+        Instances instancesPerClass = bucketsMap.get(classValue);
+
+        double sumValues = 0;
+        int instancesNumber = instancesPerClass.size();
+        for (int i = 0; i< instancesNumber; i++){
+            Instance instance = instancesPerClass.instance(i);
+            double featureValue = instance.value(feature);
+            // TODO verificare se il valore è null cosa viene messo in featureValue e nel caso non considerare i null
+            sumValues += featureValue;
+        }
+        return sumValues / instancesNumber;
+    }
+}
