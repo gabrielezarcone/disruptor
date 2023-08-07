@@ -1,9 +1,16 @@
 package attacks;
 
+import attributeselection.AbstractAttributeSelector;
+import attributeselection.InfoGainEval;
+import attributeselection.RandomSelector;
 import lombok.Getter;
 import lombok.Setter;
-import weka.core.Instance;
+import weka.core.Attribute;
 import weka.core.Instances;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 
 public abstract class Attack {
@@ -36,6 +43,9 @@ public abstract class Attack {
      */
     @Getter @Setter
     private Instances target;
+
+    @Getter @Setter
+    private List<Attribute> featureSelected = new ArrayList<>();
 
 
 
@@ -141,6 +151,14 @@ public abstract class Attack {
         }
         else {
             throw new IllegalArgumentException("The featuresSet should be between 0 and 1");
+        }
+    }
+
+    public void setFeatureSelected(double[][] selectedFeatures) {
+        for(int i=0; i<selectedFeatures.length; i++){
+            // Fetch the selected attribute
+            Attribute feature = target.attribute(i);
+            featureSelected.add(feature);
         }
     }
 }

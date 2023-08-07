@@ -8,6 +8,10 @@ import attacks.custom.SideBySideDuplicate;
 import attacks.labelflipping.LabelFlipping;
 import attacks.labelflipping.RandomLabelFlipping;
 import experiment.DisruptorExperiment;
+import attributeselection.AbstractAttributeSelector;
+import attributeselection.InfoGainEval;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;
 import properties.versionproviders.DisruptorVersionProvider;
@@ -29,8 +33,7 @@ import weka.core.converters.CSVSaver;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
+import java.util.*;
 import java.util.concurrent.Callable;
 
 @Slf4j
@@ -54,6 +57,24 @@ public class Disruptor implements Callable<Integer> {
     private Instances testSet;
     private final Exporter arffExport = new Exporter( new ArffSaver() );
     private final Exporter csvExport = new Exporter( new CSVSaver() );
+
+    /**
+     * List of feature selection algorithms
+     * @param featureSelectionAlgorithms  List of feature selection algorithms
+     * @return List of feature selection algorithms
+     */
+    @Getter
+    @Setter
+    private List<AbstractAttributeSelector> featureSelectionAlgorithms = new ArrayList<>();
+
+    /**
+     * Map between the feature selection algorithm and the corresponding selected features
+     * @param selectedFeatureMap Map between the feature selection algorithm and the corresponding selected features
+     * @return Map between the feature selection algorithm and the corresponding selected features
+     */
+    @Getter @Setter
+    private Map<AbstractAttributeSelector, double[][]> selectedFeatureMap = new HashMap<>();
+
 
     // CLI PARAMS ---------------------------------------------------------------------------------------------------------------------------
     @CommandLine.Parameters(
@@ -83,6 +104,14 @@ public class Disruptor implements Callable<Integer> {
             defaultValue="1",
             split = "," )
     private ArrayList<Double> capacitiesList = new ArrayList<>();
+
+    @CommandLine.Option(
+            names = {"-K", "--knowledge"},
+            description= "Comma-separated knowledge for the attacks.\nThe knowledge is a percentage between 0 and 1.\ne.g. -K 0.2,0.5,1\nDefault: 1\n",
+            paramLabel="KNOWLEDGE",
+            defaultValue="1",
+            split = "," )
+    private ArrayList<Double> knowledgeList = new ArrayList<>();
 
     @CommandLine.Option(
             names = {"-t", "--train-percent"},
@@ -138,42 +167,57 @@ public class Disruptor implements Callable<Integer> {
             dataset = CSVUtil.readCSVFile(datasetFile, className);
         }
 
+        populateFeatureSelectionAlgorithmsList( dataset );
+        //TODO fare la feature selection solamente sulle feature specificate dalla knowledge
+        performFeatureSelection();
+
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HHmmss");
         String startDate = simpleDateFormat.format(new Date());
 
-        for( int run=0; run<runs; run++ ){
+        for( AbstractAttributeSelector attributeSelectorAlgorithm : selectedFeatureMap.keySet() ){
 
-            log.info("\n\nRUN {} ----------------------------------\n", run);
+            log.info("\tfeature selection algorithm: {}", attributeSelectorAlgorithm.getName());
 
-            // Creates a copy of the starting instances otherwise a test set is added at every run growing exponentially
-            Instances runDataset = new Instances(dataset);
+            for( int run=0; run<runs; run++ ){
 
-            if(experimenter){
-                // To use as a reference, add the input dataset as the first list element
-                perturbedDatasets.add(runDataset);
-            }
+                log.info("\n\n{}: RUN {} ----------------------------------\n", attributeSelectorAlgorithm.getName(), run);
 
-            // Set folder name
-            folderName = PARENT_FOLDER + File.separator + startDate + File.separator + "run" + run;
+                // Creates a copy of the starting instances otherwise a test set is added at every run growing exponentially
+                Instances runDataset = new Instances(dataset);
 
-            // Split Train and Test set
-            Instances[] splitTrainTest = InstancesUtil.splitTrainTest(runDataset, trainPercentage, run);
-            Instances trainset = splitTrainTest[0];
-            testSet = splitTrainTest[1];
+                if(experimenter){
+                    // To use as a reference, add the input dataset as the first list element
+                    perturbedDatasets.add(runDataset);
+                }
 
-            // Export test set
-            exportTestSet(testSet);
+                // Set folder name
+                folderName = PARENT_FOLDER
+                        + File.separator
+                        + startDate
+                        + File.separator
+                        + attributeSelectorAlgorithm.getName()
+                        + File.separator
+                        + "run" + run;
 
-            // Populate the attacks and the classifiers lists
-            populateAttacksList(trainset);
-            populateClassifiersList();
+                // Split Train and Test set
+                Instances[] splitTrainTest = InstancesUtil.splitTrainTest(runDataset, trainPercentage, run);
+                Instances trainset = splitTrainTest[0];
+                testSet = splitTrainTest[1];
 
-            // Attack main loop
-            performAttacks(trainset, attacksList, capacitiesList);
+                // Export test set
+                exportTestSet(testSet);
 
-            if(experimenter){
-                // Append the test set to each dataset
-                appendTestSet(true);
+                // Populate the attacks and the classifiers lists
+                populateAttacksList(trainset, selectedFeatureMap.get(attributeSelectorAlgorithm));
+                populateClassifiersList();
+
+                // Attack main loop
+                performAttacks(trainset, attacksList, capacitiesList, attributeSelectorAlgorithm);
+
+                if(experimenter){
+                    // Append the test set to each dataset
+                    appendTestSet(true);
+                }
             }
         }
 
@@ -189,8 +233,9 @@ public class Disruptor implements Callable<Integer> {
     /**
      * Fill the attacks list with all the attacks
      * @param dataset dataset to perturbate during the attacks
+     * @param selectedFeatures features to perturbate during the attacks
      */
-    private void populateAttacksList(Instances dataset) {
+    private void populateAttacksList(Instances dataset, double[][] selectedFeatures) {
         attacksList.clear();
         attacksList.add(new LabelFlipping(dataset));
         attacksList.add(new RandomLabelFlipping(dataset));
@@ -214,8 +259,9 @@ public class Disruptor implements Callable<Integer> {
      * @param trainingSet training set to perturb
      * @param attacksList list of attacks to perform
      * @param capacitiesList list of capacities
+     * @param attributeSelectorAlgorithm
      */
-    private void performAttacks(Instances trainingSet, ArrayList<Attack> attacksList, ArrayList<Double> capacitiesList){
+    private void performAttacks(Instances trainingSet, ArrayList<Attack> attacksList, ArrayList<Double> capacitiesList, AbstractAttributeSelector attributeSelectorAlgorithm){
         // Nested loop between attacks list and capacities list
         attacksList.forEach( attack -> {
             String attackClassName = attack.getClass().getSimpleName();
@@ -228,7 +274,7 @@ public class Disruptor implements Callable<Integer> {
                 log.info("\tcapacity: {}", capacity);
 
                 // Define an attack code unique for this attack run
-                String attackCode = attackName + "_" + capacity;
+                String attackCode = attackName + "_" + attributeSelectorAlgorithm.getName()  + "_C" + capacity;
 
                 // Perform this attack with this capacity
                 Instances trainingSetCopy = new Instances(trainingSet);
@@ -324,5 +370,42 @@ public class Disruptor implements Callable<Integer> {
         DisruptorExperiment experiment = new DisruptorExperiment(perturbedDatasets, trainPercentage, folderName);
         experiment.setClassifiersList(classifiersList);
         experiment.start();
+    }
+
+
+
+    /**
+     * @param featureSelectionAlgorithm the algorithm that perform the feature selection
+     * @return the list of the selected feature based on the feature selection algorithms and the feature set capacity
+     */
+    public double[][] getSelectedFeatures(AbstractAttributeSelector featureSelectionAlgorithm){
+        return selectedFeatureMap.get(featureSelectionAlgorithm);
+    }
+
+    /**
+     * Populate the list of feature selection algorithms
+     * @param dataset dataset on which the feature selection is performed
+     */
+    public void populateFeatureSelectionAlgorithmsList(Instances dataset){
+        featureSelectionAlgorithms.clear();
+        featureSelectionAlgorithms.add(new InfoGainEval(dataset));
+        //featureSelectionAlgorithms.add(new RandomSelector(dataset));
+    }
+
+    /**
+     * For each Feature selection algorithm of featureSelectionAlgorithms, perform the attribute selection of the target
+     * and store the ranked attributes in the selectedFeatureMap
+     */
+    public void performFeatureSelection(){
+        knowledgeList.forEach( knowledge -> {
+
+            for(AbstractAttributeSelector fsAlgorithm : featureSelectionAlgorithms){
+                fsAlgorithm.setKnowledge(knowledge);
+                fsAlgorithm.eval();
+                double[][] rankedAttributes = fsAlgorithm.getRankedAttributes();
+                selectedFeatureMap.put( fsAlgorithm, rankedAttributes );
+            }
+
+        });
     }
 }
