@@ -1,4 +1,4 @@
-package attacks.labelflipping;
+package attacks.horizontal.labelflipping;
 
 import attacks.Attack;
 import weka.core.Attribute;

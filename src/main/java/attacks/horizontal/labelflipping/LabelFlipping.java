@@ -1,4 +1,4 @@
-package attacks.labelflipping;
+package attacks.horizontal.labelflipping;
 
 import attacks.Attack;
 import lombok.extern.slf4j.Slf4j;
