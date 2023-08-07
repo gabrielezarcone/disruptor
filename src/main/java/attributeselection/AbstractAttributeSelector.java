@@ -13,7 +13,7 @@ import java.util.HashMap;
 @Slf4j
 public abstract class AbstractAttributeSelector {
 
-    @Setter
+    @Getter @Setter
     private Instances targetInstances;
     @Getter @Setter
     private HashMap<Double, Double> featureRanksMap = new HashMap<>();
