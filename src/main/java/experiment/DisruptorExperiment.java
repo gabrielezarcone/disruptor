@@ -200,7 +200,7 @@ public class DisruptorExperiment {
         log.info("Initializing...");
         experiment.initialize();
         log.info("Running...");
-        experiment.runExperiment();
+        experiment.runExperiment(true);
         log.info("Finishing...");
         experiment.postProcess();
     }

@@ -252,10 +252,6 @@ public class Disruptor implements Callable<Integer> {
         meanPerClassAttack.setFeatureSelected(selectedFeatures);
         attacksList.add(meanPerClassAttack);
 
-        OppositeAttack oppositeAttack = new OppositeAttack(dataset);
-        oppositeAttack.setFeatureSelected(selectedFeatures);
-        attacksList.add(oppositeAttack);
-
         OutOfRanging outOfRanging = new OutOfRanging(dataset);
         outOfRanging.setFeatureSelected(selectedFeatures);
         attacksList.add(outOfRanging);
@@ -303,7 +299,10 @@ public class Disruptor implements Callable<Integer> {
                 log.info("\tcapacity: {}", capacity);
 
                 // Define an attack code unique for this attack run
-                String attackCode = attackName + "_" + attributeSelectorAlgorithm.getName()  + "_C" + capacity;
+                String attackCode = attackName +
+                        "_" + attributeSelectorAlgorithm.getName() +
+                        "_K" + attributeSelectorAlgorithm.getKnowledge() +
+                        "_C" + capacity ;
 
                 // Perform this attack with this capacity
                 Instances trainingSetCopy = new Instances(trainingSet);
