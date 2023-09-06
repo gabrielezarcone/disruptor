@@ -48,7 +48,8 @@ public class Disruptor implements Callable<Integer> {
     public static final String PARENT_FOLDER = "output";
     public static final String EXPERIMENT_FOLDER = "experiment";
 
-    private String folderName = PARENT_FOLDER;
+    private String runFolderName = PARENT_FOLDER;
+    private String baseFolderName = "";
     private String experimentFolderName = EXPERIMENT_FOLDER;
     private ArrayList<Attack> attacksList = new ArrayList<>();
     private ArrayList<Classifier> classifiersList = new ArrayList<>();
@@ -184,15 +185,12 @@ public class Disruptor implements Callable<Integer> {
                 // Creates a copy of the starting instances otherwise a test set is added at every run growing exponentially
                 Instances runDataset = new Instances(dataset);
 
-                if(experimenter){
-                    // To use as a reference, add the input dataset as the first list element
-                    perturbedDatasets.add(runDataset);
-                }
+                baseFolderName = PARENT_FOLDER
+                        + File.separator
+                        + startDate;
 
                 // Set folder name
-                folderName = PARENT_FOLDER
-                        + File.separator
-                        + startDate
+                runFolderName = baseFolderName
                         + File.separator
                         + attributeSelectorAlgorithm.getName()
                         + File.separator
@@ -349,23 +347,23 @@ public class Disruptor implements Callable<Integer> {
      */
     private void exportPerturbedDataset(String attackCode, Instances perturbedDataset) throws IOException {
         // Export ARFF
-        arffExport.exportInFolder( perturbedDataset, folderName, attackCode );
+        arffExport.exportInFolder( perturbedDataset, runFolderName, attackCode );
         // Export CSV
-        csvExport.exportInFolder( perturbedDataset, folderName, attackCode );
+        csvExport.exportInFolder( perturbedDataset, runFolderName, attackCode );
     }
 
     private void exportTestSet(Instances testSet) throws IOException {
         // Export ARFF
-        arffExport.exportInFolder( testSet, folderName, testSet.relationName()+"_TEST" );
+        arffExport.exportInFolder( testSet, runFolderName, testSet.relationName()+"_TEST" );
         // Export CSV
-        csvExport.exportInFolder( testSet, folderName, testSet.relationName()+"_TEST" );
+        csvExport.exportInFolder( testSet, runFolderName, testSet.relationName()+"_TEST" );
     }
 
     private void exportTrainTestSet(Instances trainTestSet) throws IOException {
         // Export ARFF
-        arffExport.exportInFolder( trainTestSet, folderName + File.separator + "trainTest", trainTestSet.relationName());
+        arffExport.exportInFolder( trainTestSet, runFolderName + File.separator + "trainTest", trainTestSet.relationName());
         // Export CSV
-        csvExport.exportInFolder( trainTestSet, folderName + File.separator + "trainTest", trainTestSet.relationName() );
+        csvExport.exportInFolder( trainTestSet, runFolderName + File.separator + "trainTest", trainTestSet.relationName() );
     }
 
 
@@ -394,7 +392,7 @@ public class Disruptor implements Callable<Integer> {
      * Evaluate the effectiveness of the attacks using several ML algorithms
      */
     private void evaluateAttacks() throws Exception {
-        DisruptorExperiment experiment = new DisruptorExperiment(perturbedDatasets, trainPercentage, folderName);
+        DisruptorExperiment experiment = new DisruptorExperiment(perturbedDatasets, trainPercentage, baseFolderName);
         experiment.setClassifiersList(classifiersList);
         experiment.start();
     }
