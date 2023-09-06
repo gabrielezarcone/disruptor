@@ -201,6 +201,11 @@ public class Disruptor implements Callable<Integer> {
                 Instances trainset = splitTrainTest[0];
                 testSet = splitTrainTest[1];
 
+                if(experimenter){
+                    // To use as a reference, add the input dataset as the first list element
+                    perturbedDatasets.add(trainset);
+                }
+
                 // Export test set
                 exportTestSet(testSet);
 
@@ -211,16 +216,19 @@ public class Disruptor implements Callable<Integer> {
                 // Attack main loop
                 performAttacks(trainset, attacksList, capacitiesList, attributeSelectorAlgorithm);
 
-                if(experimenter){
-                    // Append the test set to each dataset
-                    appendTestSet(true);
-                }
             }
-        }
 
-        if(experimenter){
-            // Evaluate the effectiveness of the attacks
-            evaluateAttacks();
+            if(experimenter){
+                // Append the test set to each dataset
+                appendTestSet(true);
+            }
+
+            if(experimenter){
+                // Evaluate the effectiveness of the attacks
+                evaluateAttacks();
+            }
+
+            perturbedDatasets.clear();
         }
 
         return 0;
