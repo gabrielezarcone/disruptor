@@ -13,6 +13,15 @@ public class RandomSelector extends AbstractAttributeSelector{
         super(instances);
     }
 
+    public RandomSelector(AbstractAttributeSelector selector) {
+        super(selector);
+    }
+
+    @Override
+    public AbstractAttributeSelector copy() {
+        return new RandomSelector(this);
+    }
+
     @Override
     protected double[][] selectAttributes() {
         Instances instances = getTargetInstances();

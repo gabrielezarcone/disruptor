@@ -295,8 +295,7 @@ public class Disruptor implements Callable<Integer> {
             // save in a list all the perturbed datasets of this attack
             ArrayList<Instances> attackPerturbedDatasets = new ArrayList<>();
             capacitiesList.forEach(capacity -> {
-
-                log.info("\tcapacity: {}", capacity);
+                log.info("\tcapacity: {}\t knowledge: {}", capacity, attributeSelectorAlgorithm.getKnowledge());
 
                 // Define an attack code unique for this attack run
                 String attackCode = attackName +
@@ -418,6 +417,26 @@ public class Disruptor implements Callable<Integer> {
         featureSelectionAlgorithms.clear();
         featureSelectionAlgorithms.add(new InfoGainEval(dataset));
         //featureSelectionAlgorithms.add(new RandomSelector(dataset));
+
+        addKnowledge();
+    }
+
+    /**
+     * Add to featureSelectionAlgorithms an algorithm for each knowledge selected
+     */
+    private void addKnowledge(){
+        List<AbstractAttributeSelector> newFeatureSelectionAlgorithms = new ArrayList<>();
+
+        featureSelectionAlgorithms.forEach( algorithm -> {
+            knowledgeList.forEach( knowledge -> {
+                AbstractAttributeSelector newAlgorithm = algorithm.copy();
+                newAlgorithm.setKnowledge( knowledge );
+                newFeatureSelectionAlgorithms.add( newAlgorithm );
+            } );
+        } );
+
+        featureSelectionAlgorithms = newFeatureSelectionAlgorithms;
+
     }
 
     /**
@@ -427,8 +446,9 @@ public class Disruptor implements Callable<Integer> {
     public void performFeatureSelection(){
         knowledgeList.forEach( knowledge -> {
 
+            log.info("\tknowledge: {}", knowledge);
+
             for(AbstractAttributeSelector fsAlgorithm : featureSelectionAlgorithms){
-                fsAlgorithm.setKnowledge(knowledge);
                 fsAlgorithm.eval();
                 double[][] rankedAttributes = fsAlgorithm.getRankedAttributes();
                 selectedFeatureMap.put( fsAlgorithm, rankedAttributes );

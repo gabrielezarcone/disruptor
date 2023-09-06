@@ -16,6 +16,10 @@ public class InfoGainEval extends AbstractAttributeSelector {
         super(instances);
     }
 
+    public InfoGainEval(AbstractAttributeSelector selectorToCopy) {
+        super(selectorToCopy);
+    }
+
     @Override
     protected double[][] selectAttributes() {
         Instances instances = getTargetInstances();
@@ -38,6 +42,11 @@ public class InfoGainEval extends AbstractAttributeSelector {
         }
 
         return attrRanks;
+    }
+
+    @Override
+    public AbstractAttributeSelector copy() {
+        return new InfoGainEval(this);
     }
 
 

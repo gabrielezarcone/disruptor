@@ -27,6 +27,24 @@ public abstract class AbstractAttributeSelector {
     protected AbstractAttributeSelector(Instances instances){
         this.targetInstances = new Instances(instances);
     }
+    /**
+     * @return a copy of the object
+     */
+    public abstract AbstractAttributeSelector copy();
+
+    /**
+     * Copy constructor. Make a deep copy of the object passed as a parameter
+     * @param selectorToCopy object to copy
+     */
+    protected AbstractAttributeSelector(AbstractAttributeSelector selectorToCopy){
+        this.targetInstances = new Instances( selectorToCopy.getTargetInstances() ) ;
+        this.featureRanksMap = new HashMap<>( selectorToCopy.getFeatureRanksMap() );
+        if(this.rankedAttributes != null){
+            this.rankedAttributes = selectorToCopy.getRankedAttributes().clone();
+        }
+        this.name = selectorToCopy.getName();
+        this.knowledge = selectorToCopy.getKnowledge();
+    }
 
     /**
      * Perform the attribute selection returning a 2D double array.
