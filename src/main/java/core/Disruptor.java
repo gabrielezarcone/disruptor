@@ -5,6 +5,7 @@ import attacks.Attack;
 import attacks.horizontal.labelflipping.LabelFlipping;
 import attacks.horizontal.labelflipping.RandomLabelFlipping;
 import attacks.vertical.*;
+import attributeselection.RandomSelector;
 import experiment.DisruptorExperiment;
 import attributeselection.AbstractAttributeSelector;
 import attributeselection.InfoGainEval;
@@ -461,7 +462,7 @@ public class Disruptor implements Callable<Integer> {
     public void populateFeatureSelectionAlgorithmsList(Instances dataset){
         featureSelectionAlgorithms.clear();
         featureSelectionAlgorithms.add(new InfoGainEval(dataset));
-        //featureSelectionAlgorithms.add(new RandomSelector(dataset));
+        featureSelectionAlgorithms.add(new RandomSelector(dataset));
 
         addKnowledge();
     }

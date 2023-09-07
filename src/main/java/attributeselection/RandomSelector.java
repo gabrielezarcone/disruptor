@@ -35,8 +35,7 @@ public class RandomSelector extends AbstractAttributeSelector{
 
         for( int i=0; i<rangeList.size(); i++ ){
             int index = rangeList.get(i);
-            //TODO test this
-            attrRanks[i] = new double[] {index, rangeList.size()-index};
+            attrRanks[i] = new double[] {index, rangeList.size()-i};
         }
 
         return attrRanks;
