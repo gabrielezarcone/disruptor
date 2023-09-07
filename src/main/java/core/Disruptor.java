@@ -170,7 +170,6 @@ public class Disruptor implements Callable<Integer> {
         }
 
         populateFeatureSelectionAlgorithmsList( dataset );
-        //TODO fare la feature selection solamente sulle feature specificate dalla knowledge
         performFeatureSelection();
 
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HHmmss");
