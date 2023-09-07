@@ -9,6 +9,7 @@ import attributeselection.RandomSelector;
 import experiment.DisruptorExperiment;
 import attributeselection.AbstractAttributeSelector;
 import attributeselection.InfoGainEval;
+import filters.ApplyClassBalancer;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -125,7 +126,7 @@ public class Disruptor implements Callable<Integer> {
 
     @CommandLine.Option(
             names = {"-b", "--balance"},
-            description = "[[ TO BE IMPLEMENTED ]]\nPerform other 2 run of the attacks on blanced dataset\nThe first additional run the instances are balanced with Resample.\nFor the second run is used  SMOTE\n",
+            description = "Perform other 2 run of the attacks on balanced dataset\nIn the first additional run, the instances are balanced with Resample.\nFor the second run is used SMOTE instead\n",
             paramLabel = "BALANCE")
     private boolean toBalance;
 
@@ -180,7 +181,29 @@ public class Disruptor implements Callable<Integer> {
                 + File.separator
                 + startDate;
 
-        disrupt(dataset);
+        if(toBalance) {
+            log.info("\n------------------------------------------------------------------------------------------------------------------------------------\n" +
+                    "\t-- WITHOUT BALANCING --" +
+                    "\n------------------------------------------------------------------------------------------------------------------------------------");
+            // Run the main disruptor loop without balancing
+            disrupt(dataset);
+
+            // Run the main disruptor loop balancing with Resample filter
+            log.info("\n------------------------------------------------------------------------------------------------------------------------------------\n" +
+                    "\t-- RESAMPLE BALANCING --" +
+                    "\n------------------------------------------------------------------------------------------------------------------------------------");
+            disrupt(ApplyClassBalancer.resample(dataset));
+
+            // Run the main disruptor loop balancing with SMOTE filter
+            log.info("\n------------------------------------------------------------------------------------------------------------------------------------\n" +
+                    "\t-- SMOTE BALANCING --" +
+                    "\n------------------------------------------------------------------------------------------------------------------------------------");
+            disrupt(ApplyClassBalancer.smote(dataset));
+        }
+        else {
+            // Run the main disruptor loop without balancing
+            disrupt(dataset);
+        }
 
         return 0;
     }
@@ -198,7 +221,7 @@ public class Disruptor implements Callable<Integer> {
 
         for( AbstractAttributeSelector attributeSelectorAlgorithm : selectedFeatureMap.keySet() ){
 
-            log.info("\tfeature selection algorithm: {}", attributeSelectorAlgorithm.getName());
+            log.info("\n\n===========================================\nfeature selection algorithm: {}\n===========================================\n", attributeSelectorAlgorithm.getName());
 
             for( int runNumber=0; runNumber<runs; runNumber++ ){
                 executeRun(dataset, attributeSelectorAlgorithm, runNumber);
