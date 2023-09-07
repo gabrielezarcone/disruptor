@@ -50,6 +50,7 @@ public class Disruptor implements Callable<Integer> {
 
     private String runFolderName = PARENT_FOLDER;
     private String baseFolderName = "";
+    String startDate = "";
     private String experimentFolderName = EXPERIMENT_FOLDER;
     private ArrayList<Attack> attacksList = new ArrayList<>();
     private ArrayList<Classifier> classifiersList = new ArrayList<>();
@@ -173,13 +174,13 @@ public class Disruptor implements Callable<Integer> {
         performFeatureSelection();
 
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HHmmss");
-        String startDate = simpleDateFormat.format(new Date());
+        startDate = simpleDateFormat.format(new Date());
 
         baseFolderName = PARENT_FOLDER
                 + File.separator
                 + startDate;
 
-        disrupt(dataset, startDate);
+        disrupt(dataset);
 
         return 0;
     }
@@ -191,17 +192,16 @@ public class Disruptor implements Callable<Integer> {
      * Each run perform every attack present in the attacksList
      *
      * @param dataset input dataset
-     * @param startDate start date of the attacks in String format
      * @throws Exception
      */
-    private void disrupt(Instances dataset, String startDate) throws Exception {
+    private void disrupt(Instances dataset) throws Exception {
 
         for( AbstractAttributeSelector attributeSelectorAlgorithm : selectedFeatureMap.keySet() ){
 
             log.info("\tfeature selection algorithm: {}", attributeSelectorAlgorithm.getName());
 
             for( int runNumber=0; runNumber<runs; runNumber++ ){
-                executeRun(dataset, startDate, attributeSelectorAlgorithm, runNumber);
+                executeRun(dataset, attributeSelectorAlgorithm, runNumber);
             }
 
             if(experimenter){
@@ -220,7 +220,7 @@ public class Disruptor implements Callable<Integer> {
         }
     }
 
-    private void executeRun(Instances dataset, String startDate, AbstractAttributeSelector attributeSelectorAlgorithm, int run) throws Exception {
+    private void executeRun(Instances dataset, AbstractAttributeSelector attributeSelectorAlgorithm, int run) throws Exception {
         log.info("\n\n{}: RUN {} ----------------------------------\n", attributeSelectorAlgorithm.getName(), run);
 
         // Creates a copy of the starting instances otherwise a test set is added at every run growing exponentially
