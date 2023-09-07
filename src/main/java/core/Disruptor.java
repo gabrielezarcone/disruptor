@@ -212,23 +212,7 @@ public class Disruptor implements Callable<Integer> {
             }
 
             if(roc){
-                perturbedDataMapForROC.keySet().forEach( attackName -> {
-
-                    Map<Double, Instances> attackPerturbedDatasets = perturbedDataMapForROC.getCapacitiesMap(attackName) ;
-
-                    log.info("Started ROC curves visualization for attack {}", attackName);
-                    log.info("Running...");
-
-                    for(Classifier classifier : classifiersList){
-                        log.debug("Started ROC for attack {} and classifier {}", attackName, classifier.getClass().getSimpleName());
-                        ROCGenerator rocGenerator = new ROCGenerator(testSet, classifier, attackName);
-                        rocGenerator.visualizeROCCurves(new ArrayList<>(attackPerturbedDatasets.values()));
-                        log.debug("Finished ROC for attack {} and classifier {}", attackName, classifier.getClass().getSimpleName());
-                    }
-
-                    log.info("Finished ROC curves visualization for attack {}", attackName);
-
-                } );
+                showROCsForAttacks();
             }
 
             clearFieldsAfterAllRuns();
@@ -275,6 +259,26 @@ public class Disruptor implements Callable<Integer> {
         if(roc){
             perturbedDataMapForROC.clear();
         }
+    }
+
+    private void showROCsForAttacks() {
+        perturbedDataMapForROC.keySet().forEach( attackName -> {
+
+            Map<Double, Instances> attackPerturbedDatasets = perturbedDataMapForROC.getCapacitiesMap(attackName) ;
+
+            log.info("Started ROC curves visualization for attack {}", attackName);
+            log.info("Running...");
+
+            for(Classifier classifier : classifiersList){
+                log.debug("Started ROC for attack {} and classifier {}", attackName, classifier.getClass().getSimpleName());
+                ROCGenerator rocGenerator = new ROCGenerator(testSet, classifier, attackName);
+                rocGenerator.visualizeROCCurves(new ArrayList<>(attackPerturbedDatasets.values()));
+                log.debug("Finished ROC for attack {} and classifier {}", attackName, classifier.getClass().getSimpleName());
+            }
+
+            log.info("Finished ROC curves visualization for attack {}", attackName);
+
+        } );
     }
 
     /**
