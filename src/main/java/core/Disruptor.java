@@ -180,44 +180,13 @@ public class Disruptor implements Callable<Integer> {
 
             log.info("\tfeature selection algorithm: {}", attributeSelectorAlgorithm.getName());
 
-            for( int run=0; run<runs; run++ ){
-
-                log.info("\n\n{}: RUN {} ----------------------------------\n", attributeSelectorAlgorithm.getName(), run);
-
-                // Creates a copy of the starting instances otherwise a test set is added at every run growing exponentially
-                Instances runDataset = new Instances(dataset);
+            for( int runNumber=0; runNumber<runs; runNumber++ ){
 
                 baseFolderName = PARENT_FOLDER
                         + File.separator
                         + startDate;
 
-                // Set folder name
-                runFolderName = baseFolderName
-                        + File.separator
-                        + attributeSelectorAlgorithm.getName()
-                        + File.separator
-                        + "run" + run;
-
-                // Split Train and Test set
-                Instances[] splitTrainTest = InstancesUtil.splitTrainTest(runDataset, trainPercentage, run);
-                Instances trainset = splitTrainTest[0];
-                testSet = splitTrainTest[1];
-
-                if(experimenter){
-                    // To use as a reference, add the input dataset as the first list element
-                    perturbedDatasets.add(trainset);
-                }
-
-                // Export test set
-                exportTestSet(testSet);
-
-                // Populate the attacks and the classifiers lists
-                populateAttacksList(trainset, selectedFeatureMap.get(attributeSelectorAlgorithm));
-                populateClassifiersList();
-
-                // Attack main loop
-                performAttacks(trainset, attacksList, capacitiesList, attributeSelectorAlgorithm);
-
+                executeRun(dataset, startDate, attributeSelectorAlgorithm, runNumber);
             }
 
             if(experimenter){
@@ -258,6 +227,40 @@ public class Disruptor implements Callable<Integer> {
         }
 
         return 0;
+    }
+
+    private void executeRun(Instances dataset, String startDate, AbstractAttributeSelector attributeSelectorAlgorithm, int run) throws Exception {
+        log.info("\n\n{}: RUN {} ----------------------------------\n", attributeSelectorAlgorithm.getName(), run);
+
+        // Creates a copy of the starting instances otherwise a test set is added at every run growing exponentially
+        Instances runDataset = new Instances(dataset);
+
+        // Set folder name
+        runFolderName = baseFolderName
+                + File.separator
+                + attributeSelectorAlgorithm.getName()
+                + File.separator
+                + "run" + run;
+
+        // Split Train and Test set
+        Instances[] splitTrainTest = InstancesUtil.splitTrainTest(runDataset, trainPercentage, run);
+        Instances trainset = splitTrainTest[0];
+        testSet = splitTrainTest[1];
+
+        if(experimenter){
+            // To use as a reference, add the input dataset as the first list element
+            perturbedDatasets.add(trainset);
+        }
+
+        // Export test set
+        exportTestSet(testSet);
+
+        // Populate the attacks and the classifiers lists
+        populateAttacksList(trainset, selectedFeatureMap.get(attributeSelectorAlgorithm));
+        populateClassifiersList();
+
+        // Attack main loop
+        performAttacks(trainset, attacksList, capacitiesList, attributeSelectorAlgorithm);
     }
 
 
