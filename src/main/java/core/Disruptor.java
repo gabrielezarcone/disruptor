@@ -175,16 +175,32 @@ public class Disruptor implements Callable<Integer> {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HHmmss");
         String startDate = simpleDateFormat.format(new Date());
 
+        baseFolderName = PARENT_FOLDER
+                + File.separator
+                + startDate;
+
+        disrupt(dataset, startDate);
+
+        return 0;
+    }
+
+    /**
+     *
+     * Main disruptor loop.
+     * For each feature selection algorithm perform the number of runs defined.
+     * Each run perform every attack present in the attacksList
+     *
+     * @param dataset input dataset
+     * @param startDate start date of the attacks in String format
+     * @throws Exception
+     */
+    private void disrupt(Instances dataset, String startDate) throws Exception {
+
         for( AbstractAttributeSelector attributeSelectorAlgorithm : selectedFeatureMap.keySet() ){
 
             log.info("\tfeature selection algorithm: {}", attributeSelectorAlgorithm.getName());
 
             for( int runNumber=0; runNumber<runs; runNumber++ ){
-
-                baseFolderName = PARENT_FOLDER
-                        + File.separator
-                        + startDate;
-
                 executeRun(dataset, startDate, attributeSelectorAlgorithm, runNumber);
             }
 
@@ -218,8 +234,6 @@ public class Disruptor implements Callable<Integer> {
             clearFieldsAfterAllRuns();
 
         }
-
-        return 0;
     }
 
     private void executeRun(Instances dataset, String startDate, AbstractAttributeSelector attributeSelectorAlgorithm, int run) throws Exception {
