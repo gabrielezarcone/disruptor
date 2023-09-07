@@ -2,7 +2,6 @@ package core;
 
 
 import attacks.Attack;
-import attacks.horizontal.OppositeAttack;
 import attacks.horizontal.labelflipping.LabelFlipping;
 import attacks.horizontal.labelflipping.RandomLabelFlipping;
 import attacks.vertical.*;
@@ -192,9 +191,6 @@ public class Disruptor implements Callable<Integer> {
             if(experimenter){
                 // Append the test set to each dataset
                 appendTestSet(true);
-            }
-
-            if(experimenter){
                 // Evaluate the effectiveness of the attacks
                 evaluateAttacks();
             }
@@ -219,10 +215,7 @@ public class Disruptor implements Callable<Integer> {
                 } );
             }
 
-            perturbedDatasets.clear();
-            if(roc){
-                perturbedDataMapForROC.clear();
-            }
+            clearFieldsAfterAllRuns();
 
         }
 
@@ -263,6 +256,12 @@ public class Disruptor implements Callable<Integer> {
         performAttacks(trainset, attacksList, capacitiesList, attributeSelectorAlgorithm);
     }
 
+    private void clearFieldsAfterAllRuns() {
+        perturbedDatasets.clear();
+        if(roc){
+            perturbedDataMapForROC.clear();
+        }
+    }
 
     /**
      * Fill the attacks list with all the attacks
