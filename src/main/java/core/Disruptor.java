@@ -231,7 +231,8 @@ public class Disruptor implements Callable<Integer> {
                 // Append the test set to each dataset
                 appendTestSet(true);
                 // Evaluate the effectiveness of the attacks
-                evaluateAttacks();
+                String expResultTitle = attributeSelectorAlgorithm.getName() + "\tknowledge: " + attributeSelectorAlgorithm.getKnowledge();
+                evaluateAttacks(expResultTitle);
             }
 
             if(roc){
@@ -461,10 +462,12 @@ public class Disruptor implements Callable<Integer> {
 
     /**
      * Evaluate the effectiveness of the attacks using several ML algorithms
+     * @param resultsTitle title to show with the results in the log
      */
-    private void evaluateAttacks() throws Exception {
+    private void evaluateAttacks(String resultsTitle) throws Exception {
         DisruptorExperiment experiment = new DisruptorExperiment(perturbedDatasets, trainPercentage, baseFolderName);
         experiment.setClassifiersList(classifiersList);
+        experiment.setResultsTitle(resultsTitle);
         experiment.start();
     }
 

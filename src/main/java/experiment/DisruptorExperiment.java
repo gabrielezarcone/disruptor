@@ -76,6 +76,9 @@ public class DisruptorExperiment {
     @Getter @Setter
     private ArrayList<Classifier> classifiersList = new ArrayList<>();
 
+    @Getter @Setter
+    private String resultsTitle = "";
+
 
 
     public DisruptorExperiment(ArrayList<Instances> perturbedDatasets, double trainPercentage, String outputFolderName){
@@ -256,7 +259,7 @@ public class DisruptorExperiment {
 
     private void printResults(PairedTTester tester) {
         ResultMatrix matrix = tester.getResultMatrix();
-        log.info("Result:\n\n{}", matrix);
+        log.info("Results:\n\n:::::::: {} ::::::::\n{}", getResultsTitle(), matrix);
         for (int i = 0; i < matrix.getColCount(); i++) {
             log.info(matrix.getColName(i));
             log.info("    Perc. correct (mean): " + matrix.getMean(i, 0));
