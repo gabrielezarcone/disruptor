@@ -200,6 +200,7 @@ public class DisruptorExperiment {
         instancesResultListener.setOutputFile(new File(experimentFolderName+File.separator+"experimenterOutput.arff"));
         experiment.setResultListener(instancesResultListener);
 
+        log.info("\n\n:::::::: {} ::::::::\n", getResultsTitle());
         log.info("Initializing...");
         experiment.initialize();
         log.info("Running...");
@@ -259,7 +260,7 @@ public class DisruptorExperiment {
 
     private void printResults(PairedTTester tester) {
         ResultMatrix matrix = tester.getResultMatrix();
-        log.info("Results:\n\n:::::::: {} ::::::::\n{}", getResultsTitle(), matrix);
+        log.info("Results:\n\n{}\n{}", getResultsTitle(), matrix);
         for (int i = 0; i < matrix.getColCount(); i++) {
             log.info(matrix.getColName(i));
             log.info("    Perc. correct (mean): " + matrix.getMean(i, 0));

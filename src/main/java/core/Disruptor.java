@@ -231,7 +231,9 @@ public class Disruptor implements Callable<Integer> {
                 // Append the test set to each dataset
                 appendTestSet(true);
                 // Evaluate the effectiveness of the attacks
-                String expResultTitle = attributeSelectorAlgorithm.getName() + "\tknowledge: " + attributeSelectorAlgorithm.getKnowledge();
+                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                String now = simpleDateFormat.format(new Date());
+                String expResultTitle = "["+now+"]\t"+ attributeSelectorAlgorithm.getName() + "\tknowledge: " + attributeSelectorAlgorithm.getKnowledge();
                 evaluateAttacks(expResultTitle);
             }
 
