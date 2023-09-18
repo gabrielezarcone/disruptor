@@ -233,7 +233,7 @@ public class Disruptor implements Callable<Integer> {
                 // Evaluate the effectiveness of the attacks
                 SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 String now = simpleDateFormat.format(new Date());
-                String expResultTitle = "["+now+"]\t"+ attributeSelectorAlgorithm.getName() + "\tknowledge: " + attributeSelectorAlgorithm.getKnowledge();
+                String expResultTitle = "["+now+"]\t"+ attributeSelectorAlgorithm.getName() + "\tknowledge: " + attributeSelectorAlgorithm.getKnowledge() + "\nRanked features: " + Arrays.deepToString(attributeSelectorAlgorithm.getRankedAttributes());
                 evaluateAttacks(expResultTitle);
             }
 
