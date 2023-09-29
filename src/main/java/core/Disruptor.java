@@ -170,6 +170,13 @@ public class Disruptor implements Callable<Integer> {
     @Override
     public Integer call() throws Exception {
 
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HHmmss");
+        startDate = simpleDateFormat.format(new Date());
+
+        baseFolderName = PARENT_FOLDER
+                + File.separator
+                + startDate;
+
         // Read the dataset file
         Instances dataset;
         if(isArff){
@@ -177,17 +184,11 @@ public class Disruptor implements Callable<Integer> {
         }
         else {
             dataset = CSVUtil.readCSVFile(datasetFile, className);
+            arffExport.exportInFolder( dataset, baseFolderName, dataset.relationName() );
         }
 
         populateFeatureSelectionAlgorithmsList( dataset );
         performFeatureSelection();
-
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HHmmss");
-        startDate = simpleDateFormat.format(new Date());
-
-        baseFolderName = PARENT_FOLDER
-                + File.separator
-                + startDate;
 
         if(toBalance) {
             log.info("\n------------------------------------------------------------------------------------------------------------------------------------\n" +
