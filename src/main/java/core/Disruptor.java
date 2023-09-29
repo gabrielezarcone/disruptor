@@ -110,6 +110,14 @@ public class Disruptor implements Callable<Integer> {
     private ArrayList<Double> capacitiesList = new ArrayList<>();
 
     @CommandLine.Option(
+            names = {"-F", "--features-capacities"},
+            description= "Comma-separated capacities for the attacks.\nThe capacity is a percentage between 0 and 1.\ne.g. -C 0.2,0.5,1\nDefault: 1\n",
+            paramLabel="FEATURES_CAPACITY",
+            defaultValue="1",
+            split = "," )
+    private ArrayList<Double> featuresCapacitiesList = new ArrayList<>();
+
+    @CommandLine.Option(
             names = {"-K", "--knowledge"},
             description= "Comma-separated knowledge for the attacks.\nThe knowledge is a percentage between 0 and 1.\ne.g. -K 0.2,0.5,1\nDefault: 1\n",
             paramLabel="KNOWLEDGE",
@@ -221,7 +229,7 @@ public class Disruptor implements Callable<Integer> {
 
         for( AbstractAttributeSelector attributeSelectorAlgorithm : selectedFeatureMap.keySet() ){
 
-            log.info("\n\n===========================================\nfeature selection algorithm: {}\n===========================================\n", attributeSelectorAlgorithm.getName());
+            log.info("\n\n===========================================\nfeature selection algorithm: {} K:{}\n===========================================\n", attributeSelectorAlgorithm.getName(), attributeSelectorAlgorithm.getKnowledge());
 
             for( int runNumber=0; runNumber<runs; runNumber++ ){
                 executeRun(dataset, attributeSelectorAlgorithm, runNumber);
@@ -277,7 +285,7 @@ public class Disruptor implements Callable<Integer> {
         populateClassifiersList();
 
         // Attack main loop
-        performAttacks(trainset, attacksList, capacitiesList, attributeSelectorAlgorithm);
+        performAttacks(trainset, attacksList, capacitiesList, featuresCapacitiesList, attributeSelectorAlgorithm);
     }
 
     private void clearFieldsAfterAllRuns() {
@@ -290,7 +298,7 @@ public class Disruptor implements Callable<Integer> {
     private void showROCsForAttacks() {
         perturbedDataMapForROC.keySet().forEach( attackName -> {
 
-            Map<Double, Instances> attackPerturbedDatasets = perturbedDataMapForROC.getCapacitiesMap(attackName) ;
+            HashMap<ROCDatasetsList.CapacitiesPair, Instances> attackPerturbedDatasets = perturbedDataMapForROC.getCapacitiesMap(attackName) ;
 
             log.info("Started ROC curves visualization for attack {}", attackName);
             log.info("Running...");
@@ -362,53 +370,58 @@ public class Disruptor implements Callable<Integer> {
      * @param trainingSet training set to perturb
      * @param attacksList list of attacks to perform
      * @param capacitiesList list of capacities
+     * @param featuresCapacitiesList list of capacities for features
      * @param attributeSelectorAlgorithm
      */
-    private void performAttacks(Instances trainingSet, ArrayList<Attack> attacksList, ArrayList<Double> capacitiesList, AbstractAttributeSelector attributeSelectorAlgorithm){
+    private void performAttacks(Instances trainingSet, ArrayList<Attack> attacksList, ArrayList<Double> capacitiesList, ArrayList<Double> featuresCapacitiesList, AbstractAttributeSelector attributeSelectorAlgorithm){
         // Nested loop between attacks list and capacities list
         attacksList.forEach( attack -> {
             String attackClassName = attack.getClass().getSimpleName();
             log.info("Started attack {}", attackClassName);
             String attackName = trainingSet.relationName() + "_" + attackClassName;
 
-            capacitiesList.forEach(capacity -> {
-                log.info("\tcapacity: {}\t knowledge: {}", capacity, attributeSelectorAlgorithm.getKnowledge());
+            featuresCapacitiesList.forEach( featureCapacity -> {
+                capacitiesList.forEach(capacity -> {
+                    log.info("\tfeatures capacity: {}\tcapacity: {}\t knowledge: {}", featureCapacity, capacity, attributeSelectorAlgorithm.getKnowledge());
 
-                // Define an attack code unique for this attack run
-                String attackCode = attackName +
-                        "_" + attributeSelectorAlgorithm.getName() +
-                        "_K" + attributeSelectorAlgorithm.getKnowledge() +
-                        "_C" + capacity ;
+                    // Define an attack code unique for this attack run
+                    String attackCode = attackName +
+                            "_" + attributeSelectorAlgorithm.getName() +
+                            "_K" + attributeSelectorAlgorithm.getKnowledge() +
+                            "_F" + featureCapacity +
+                            "_C" + capacity ;
 
-                // Perform this attack with this capacity
-                Instances trainingSetCopy = new Instances(trainingSet);
-                attack.setTarget( trainingSetCopy );
-                attack.setCapacity( capacity );
-                Instances perturbedInstances = attack.attack();
-                perturbedInstances.setRelationName(attackCode);
+                    // Perform this attack with this capacity
+                    Instances trainingSetCopy = new Instances(trainingSet);
+                    attack.setTarget( trainingSetCopy );
+                    attack.setCapacity( capacity );
+                    attack.setFeaturesCapacity( featureCapacity );
+                    Instances perturbedInstances = attack.attack();
+                    perturbedInstances.setRelationName(attackCode);
 
-                if(experimenter){
-                    perturbedDatasets.add(perturbedInstances);
-                }
-                if(roc){
+                    if(experimenter){
+                        perturbedDatasets.add(perturbedInstances);
+                    }
+                    if(roc){
+                        try {
+                            perturbedDataMapForROC.addWithCapacity(attackName, capacity, featureCapacity, perturbedInstances);
+                        } catch (Exception e) {
+                            log.error("Problem storing the perturbed dataset for the ROC curve");
+                            log.debug(attackCode);
+                            ExceptionUtil.logException(e, log);
+                        }
+                    }
+
+                    // Export the perturbed instances
                     try {
-                        perturbedDataMapForROC.addWithCapacity(attackName, capacity, perturbedInstances);
+                        exportPerturbedDataset(attackCode, perturbedInstances);
                     } catch (Exception e) {
-                        log.error("Problem storing the perturbed dataset for the ROC curve");
+                        log.error("Problem during the export of the perturbed dataset");
                         log.debug(attackCode);
                         ExceptionUtil.logException(e, log);
                     }
-                }
 
-                // Export the perturbed instances
-                try {
-                    exportPerturbedDataset(attackCode, perturbedInstances);
-                } catch (Exception e) {
-                    log.error("Problem during the export of the perturbed dataset");
-                    log.debug(attackCode);
-                    ExceptionUtil.logException(e, log);
-                }
-
+                });
             });
         });
     }
@@ -518,16 +531,12 @@ public class Disruptor implements Callable<Integer> {
      * and store the ranked attributes in the selectedFeatureMap
      */
     public void performFeatureSelection(){
-        knowledgeList.forEach( knowledge -> {
 
-            log.info("\tknowledge: {}", knowledge);
+        for(AbstractAttributeSelector fsAlgorithm : featureSelectionAlgorithms){
+            fsAlgorithm.eval();
+            double[][] rankedAttributes = fsAlgorithm.getRankedAttributes();
+            selectedFeatureMap.put( fsAlgorithm, rankedAttributes );
+        }
 
-            for(AbstractAttributeSelector fsAlgorithm : featureSelectionAlgorithms){
-                fsAlgorithm.eval();
-                double[][] rankedAttributes = fsAlgorithm.getRankedAttributes();
-                selectedFeatureMap.put( fsAlgorithm, rankedAttributes );
-            }
-
-        });
     }
 }
