@@ -27,15 +27,17 @@ public class RandomSelector extends AbstractAttributeSelector{
         Instances instances = getTargetInstances();
         int numAttributes = instances.numAttributes();
 
-        double[][] attrRanks = new double[numAttributes][2];
-
         // Create a list of all the integers between 0 and the number of attributes
         List<Integer> rangeList = IntStream.range(0, numAttributes).boxed().collect(Collectors.toList());
+        rangeList.remove(instances.classIndex());
         Collections.shuffle(rangeList);
+
+        double[][] attrRanks = new double[rangeList.size()][2];
 
         for( int i=0; i<rangeList.size(); i++ ){
             int index = rangeList.get(i);
-            attrRanks[i] = new double[] {index, rangeList.size()-i};
+            double fakeRankValue = (double) (rangeList.size() - i) / rangeList.size();
+            attrRanks[i] = new double[] {index, fakeRankValue};
         }
 
         return attrRanks;
