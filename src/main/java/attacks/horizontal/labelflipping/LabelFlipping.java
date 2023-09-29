@@ -21,8 +21,8 @@ public class LabelFlipping extends Attack{
         super(target);
     }
 
-    protected LabelFlipping(Instances target, double capacity, double knowledge) {
-        super(target, capacity, knowledge);
+    protected LabelFlipping(Instances target, double capacity, double featuresCapacity, double knowledge) {
+        super(target, capacity, featuresCapacity, knowledge);
     }
 
     @Override

@@ -11,10 +11,9 @@ public class OppositeAttack extends Attack {
         super(target);
     }
 
-    public OppositeAttack(Instances target, double capacity, double knowledge) {
-        super(target, capacity, knowledge);
+    public OppositeAttack(Instances target, double capacity, double featuresCapacity, double knowledge) {
+        super(target, capacity, featuresCapacity, knowledge);
     }
-
 
     @Override
     public Instances attack() {
@@ -26,7 +25,7 @@ public class OppositeAttack extends Attack {
             Instance instanceToAttack = perturbedInstances.instance(i);
 
             // Perform the attack only for the selected feature
-            for( Attribute feature : getFeatureSelected() ){
+            for( Attribute feature : getReducedFeatureSelected() ){
                 double actualValue = instanceToAttack.value( feature );
                 instanceToAttack.setValue( feature, actualValue*(-1) );
             }

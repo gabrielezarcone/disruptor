@@ -1,16 +1,13 @@
 package attacks;
 
-import attributeselection.AbstractAttributeSelector;
-import attributeselection.InfoGainEval;
-import attributeselection.RandomSelector;
 import lombok.Getter;
 import lombok.Setter;
+import org.w3c.dom.Attr;
 import weka.core.Attribute;
 import weka.core.Instances;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 
 public abstract class Attack {
@@ -34,17 +31,16 @@ public abstract class Attack {
      * @return the horizontal capacity of the attack
      */
     @Getter
-    private double featuresSet = 0;
+    private double featuresCapacity = 0;
 
     /**
      * instances target of the attack
-     * @param target Instances target of the attack
      * @return instances target of the attack
      */
     @Getter @Setter
     private Instances target;
 
-    @Getter @Setter
+    @Getter
     private List<Attribute> featureSelected = new ArrayList<>();
 
 
@@ -54,13 +50,14 @@ public abstract class Attack {
     // --------------------------------------------------------------------------------------------------------
 
     protected Attack(Instances target){
-        this(target, 1, 1);
+        this(target, 1, 1, 1);
     }
 
-    protected Attack(Instances target, double capacity, double knowledge){
+    protected Attack(Instances target, double capacity, double featuresCapacity, double knowledge){
         Instances targetCopy = new Instances(target);
         setTarget(targetCopy);
         setCapacity(capacity);
+        setFeaturesCapacity(featuresCapacity);
         setKnowledge(knowledge);
     }
 
@@ -98,12 +95,12 @@ public abstract class Attack {
     }
 
     /**
-     * Number of instances attacked
-     * @return Number of target instances specified by the capacity
+     * Number of features attacked
+     * @return Number of target features specified by the features capacity
      */
-    public int featuresSetSize(){
-        int targetFeaturesNumber = getTarget().numAttributes();
-        return (int) ( targetFeaturesNumber * getFeaturesSet() );
+    public int attackedFeaturesSize(){
+        int targetFeaturesNumber = getTarget().numAttributes()-1; // -1 because we want all but the class attribute
+        return (int) ( targetFeaturesNumber * getFeaturesCapacity() );
     }
 
 
@@ -142,23 +139,40 @@ public abstract class Attack {
 
     /**
      * Percentage of the features the attack use
-     * @param featuresSet of the attack. Should be between 0 and 1
-     * @throws IllegalArgumentException if featuresSet is not between 0 and 1
+     * @param featuresCapacity of the attack. Should be between 0 and 1
+     * @throws IllegalArgumentException if featuresCapacity is not between 0 and 1
      */
-    public void setFeaturesSet(double featuresSet) {
-        if(featuresSet>=0 && featuresSet<=1){
-            this.featuresSet = featuresSet;
+    public void setFeaturesCapacity(double featuresCapacity) {
+        if(featuresCapacity >=0 && featuresCapacity <=1){
+            this.featuresCapacity = featuresCapacity;
         }
         else {
-            throw new IllegalArgumentException("The featuresSet should be between 0 and 1");
+            throw new IllegalArgumentException("The featuresCapacity should be between 0 and 1");
         }
     }
 
-    public void setFeatureSelected(double[][] selectedFeatures) {
-        for(int i=0; i<selectedFeatures.length; i++){
+    /**
+     * Set the selected feature list in the rank corresponding order
+     * @param selectedFeaturesRanks the array of attributes in the order defined by the ranks
+     */
+    public void setFeatureSelected(double[][] selectedFeaturesRanks) {
+        for (double[] featureRank : selectedFeaturesRanks) {
+            int featureIndex = (int) featureRank[0];
             // Fetch the selected attribute
-            Attribute feature = target.attribute(i);
+            Attribute feature = target.attribute(featureIndex);
             featureSelected.add(feature);
         }
+    }
+
+    /**
+     * The attack must be performed on the percentage of features defined by featuresCapacity.
+     * This method, thus, returns a list where are removed the least significant features among the selected features.
+     */
+    public List<Attribute> getReducedFeatureSelected(){
+        ArrayList<Attribute> reducedFeaturesList = new ArrayList<>();
+        for (int i=0; i<attackedFeaturesSize(); i++){
+            reducedFeaturesList.add(i, getFeatureSelected().get(i));
+        }
+        return reducedFeaturesList;
     }
 }

@@ -12,8 +12,8 @@ public class SideBySideOnTop extends SideBySide{
         super(target, featureSet);
     }
 
-    public SideBySideOnTop(Instances target, double capacity, double knowledge, double featureSet) {
-        super(target, capacity, knowledge, featureSet);
+    public SideBySideOnTop(Instances target, double capacity, double featuresCapacity, double knowledge) {
+        super(target, capacity, featuresCapacity, knowledge);
     }
 
     @Override

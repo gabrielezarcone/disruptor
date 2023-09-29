@@ -15,8 +15,8 @@ public class RandomLabelFlipping extends Attack {
         super(target);
     }
 
-    public RandomLabelFlipping(Instances target, double capacity, double knowledge){
-        super(target, capacity, knowledge);
+    public RandomLabelFlipping(Instances target, double capacity, double featuresCapacity, double knowledge) {
+        super(target, capacity, featuresCapacity, knowledge);
     }
 
 

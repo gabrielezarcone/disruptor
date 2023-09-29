@@ -16,8 +16,8 @@ public class OutOfRanging extends Attack {
         super(target);
     }
 
-    public OutOfRanging(Instances target, double capacity, double knowledge) {
-        super(target, capacity, knowledge);
+    public OutOfRanging(Instances target, double capacity, double featuresCapacity, double knowledge) {
+        super(target, capacity, featuresCapacity, knowledge);
     }
 
     private final Random random = new Random();
@@ -43,7 +43,7 @@ public class OutOfRanging extends Attack {
             int instancesLength = instancesPerClass.size();
 
             // Perform the attack only for the selected feature
-            for( Attribute feature : getFeatureSelected() ){
+            for( Attribute feature : getReducedFeatureSelected() ){
 
                 // Get a random value from the same class
                 Instance randomInstanceFromSameClass = instancesPerClass.get( random.nextInt(instancesLength) );

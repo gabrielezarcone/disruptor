@@ -22,8 +22,8 @@ public class MiddlePoint extends Attack {
         super(target);
     }
 
-    public MiddlePoint(Instances target, double capacity, double knowledge) {
-        super(target, capacity, knowledge);
+    public MiddlePoint(Instances target, double capacity, double featuresCapacity, double knowledge) {
+        super(target, capacity, featuresCapacity, knowledge);
     }
 
     @Override
@@ -34,7 +34,7 @@ public class MiddlePoint extends Attack {
             Instance instanceToAttack = perturbedInstances.instance(i);
 
             // Perform the attack only for the selected feature
-            for( Attribute feature : getFeatureSelected() ){
+            for( Attribute feature : getReducedFeatureSelected() ){
                 double oldValue = instanceToAttack.value(feature);
                 double distanceFromMiddle = featureMiddlePoint(feature) - oldValue;
                 double newValue = getMultiplicationFactor() * distanceFromMiddle + oldValue;

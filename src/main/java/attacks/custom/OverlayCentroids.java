@@ -32,8 +32,8 @@ public class OverlayCentroids extends Attack {
         super(target);
     }
 
-    public OverlayCentroids(Instances target, double capacity, double knowledge, int clustersNumber) {
-        super(target, capacity, knowledge);
+    public OverlayCentroids(Instances target, double capacity, double featuresCapacity, double knowledge, int clustersNumber) {
+        super(target, capacity, featuresCapacity, knowledge);
         setClustersNumber(clustersNumber);
     }
 

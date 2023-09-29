@@ -11,8 +11,8 @@ public class MeanAttack extends Attack {
         super(target);
     }
 
-    public MeanAttack(Instances target, double capacity, double knowledge) {
-        super(target, capacity, knowledge);
+    public MeanAttack(Instances target, double capacity, double featuresCapacity, double knowledge) {
+        super(target, capacity, featuresCapacity, knowledge);
     }
 
     @Override
@@ -23,8 +23,8 @@ public class MeanAttack extends Attack {
             Instance instanceToAttack = perturbedInstances.instance(i);
 
             // Perform the attack only for the selected feature
-            for( Attribute feature : getFeatureSelected() ){
-                double meanOrMode = perturbedInstances.meanOrMode(feature);
+            for( Attribute feature : getReducedFeatureSelected() ){
+                double meanOrMode = getTarget().meanOrMode(feature);
                 instanceToAttack.setValue(feature, meanOrMode);
             }
 

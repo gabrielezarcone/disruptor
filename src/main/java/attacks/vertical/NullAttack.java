@@ -11,8 +11,8 @@ public class NullAttack extends Attack {
         super(target);
     }
 
-    public NullAttack(Instances target, double capacity, double knowledge) {
-        super(target, capacity, knowledge);
+    public NullAttack(Instances target, double capacity, double featuresCapacity, double knowledge) {
+        super(target, capacity, featuresCapacity, knowledge);
     }
 
     @Override
@@ -23,7 +23,7 @@ public class NullAttack extends Attack {
             Instance instanceToAttack = perturbedInstances.instance(i);
 
             // Perform the attack only for the selected feature
-            for( Attribute feature : getFeatureSelected() ){
+            for( Attribute feature : getReducedFeatureSelected() ){
                 instanceToAttack.setValue(feature, 0);
             }
 

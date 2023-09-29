@@ -16,8 +16,8 @@ public class MeanPerClassAttack extends Attack {
         super(target);
     }
 
-    public MeanPerClassAttack(Instances target, double capacity, double knowledge) {
-        super(target, capacity, knowledge);
+    public MeanPerClassAttack(Instances target, double capacity, double featuresCapacity, double knowledge) {
+        super(target, capacity, featuresCapacity, knowledge);
     }
 
     @Override
@@ -41,7 +41,7 @@ public class MeanPerClassAttack extends Attack {
             Instances instancesPerClass = bucketsMap.get(nextClassValue);
 
             // Perform the attack only for the selected feature
-            for( Attribute feature : getFeatureSelected() ){
+            for( Attribute feature : getReducedFeatureSelected() ){
                 // Select the mean or mode value of all the instances that have the next class value
                 double meanOrMode = instancesPerClass.meanOrMode(feature);
                 instanceToAttack.setValue(feature, meanOrMode);

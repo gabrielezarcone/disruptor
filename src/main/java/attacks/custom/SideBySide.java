@@ -5,7 +5,6 @@ import attributeselection.InfoGainEval;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import util.ExceptionUtil;
 import util.InstanceUtil;
 import util.InstancesUtil;
 import weka.core.Attribute;
@@ -29,12 +28,11 @@ public class SideBySide extends Attack {
 
     public SideBySide(Instances target, double featureSet) {
         super(target);
-        setFeaturesSet(featureSet);
+        setFeaturesCapacity(featureSet);
     }
 
-    public SideBySide(Instances target, double capacity, double knowledge, double featureSet) {
-        super(target, capacity, knowledge);
-        setFeaturesSet(featureSet);
+    public SideBySide(Instances target, double capacity, double featuresCapacity, double knowledge) {
+        super(target, capacity, featuresCapacity, knowledge);
     }
 
 
@@ -110,7 +108,7 @@ public class SideBySide extends Attack {
      */
     private void attackInstance( Instance instance, Instance referenceInstance, Attribute referenceAttribute ) {
         // Cycle on the features
-        for(int j=0; j<featuresSetSize(); j++){
+        for(int j = 0; j< attackedFeaturesSize(); j++){
 
             Attribute attribute = instance.attribute( j );
 

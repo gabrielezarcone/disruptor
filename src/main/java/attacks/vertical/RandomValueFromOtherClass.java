@@ -17,8 +17,8 @@ public class RandomValueFromOtherClass extends Attack {
         super(target);
     }
 
-    public RandomValueFromOtherClass(Instances target, double capacity, double knowledge) {
-        super(target, capacity, knowledge);
+    public RandomValueFromOtherClass(Instances target, double capacity, double featuresCapacity, double knowledge) {
+        super(target, capacity, featuresCapacity, knowledge);
     }
 
     private final Random random = new Random();
@@ -45,7 +45,7 @@ public class RandomValueFromOtherClass extends Attack {
             int instancesLength = instancesPerClass.size();
 
             // Perform the attack only for the selected feature
-            for( Attribute feature : getFeatureSelected() ){
+            for( Attribute feature : getReducedFeatureSelected() ){
 
                 Instance randomInstanceFromOtherClass = instancesPerClass.get( random.nextInt(instancesLength) );
                 double randomValueFromOtherClass = randomInstanceFromOtherClass.value(feature);

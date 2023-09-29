@@ -17,8 +17,8 @@ public class SideBySideDuplicate extends Attack {
         super(target);
     }
 
-    protected SideBySideDuplicate(Instances target, double capacity, double knowledge) {
-        super(target, capacity, knowledge);
+    protected SideBySideDuplicate(Instances target, double capacity, double featuresCapacity, double knowledge) {
+        super(target, capacity, featuresCapacity, knowledge);
     }
 
     @Override
