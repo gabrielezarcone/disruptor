@@ -74,6 +74,9 @@ public class ArffUtil {
     public static Instances readArffFile(File file, String className) throws IOException {
         Instances dataset = readArffFile(file);
         Attribute classAttribute = dataset.attribute(className);
+        if(classAttribute==null){
+            throw new IllegalArgumentException("The class attribute specified does not exist ");
+        }
         dataset.setClass(classAttribute);
 
         return dataset;
