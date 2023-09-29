@@ -59,25 +59,22 @@ public abstract class AbstractAttributeSelector {
      * Start the feature selection
      */
     public void eval() {
-        reduceAttributesByKnowledge();
+        reduceInstancesByKnowledge();
         double[][] attrRanks = selectAttributes();
-        log.debug("Selected features: {}", Arrays.deepToString(attrRanks));
+        log.debug("{} {} Selected features: {}", getName(), getKnowledge(), Arrays.deepToString(attrRanks));
         populateFields(attrRanks);
     }
 
     /**
-     * Feature selection must be performed only on the percentage of attributes defined by the knowledge attribute.
-     * This method, thus, removes attributes from targetInstances in order to match the knowledge before the feature selection.
+     * Feature selection must be performed only on the percentage of instances defined by the knowledge param.
+     * This method, thus, removes instances from targetInstances in order to match the knowledge before the feature selection.
      */
-    protected void reduceAttributesByKnowledge() {
-        int numAttributes = targetInstances.numAttributes();
-        int numAttributesToConsider = (int) (numAttributes * knowledge);
-        int numAttributesToDelete = numAttributes - numAttributesToConsider - 1; //-1 to not count the class feature
-        for (int i=0; i<numAttributesToDelete; i++){
-            Attribute currentAttribute = targetInstances.attribute(i);
-            if(currentAttribute != targetInstances.classAttribute()){
-                targetInstances.deleteAttributeAt(i);
-            }
+    protected void reduceInstancesByKnowledge() {
+        int numInstances = targetInstances.numInstances();
+        int numInstancesToConsider = (int) (numInstances * knowledge);
+        int numInstancesToDelete = numInstances - numInstancesToConsider;
+        for (int i=0; i<numInstancesToDelete; i++){
+            targetInstances.delete(numInstances-i-1);
         }
     }
 
