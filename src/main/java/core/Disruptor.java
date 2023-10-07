@@ -25,6 +25,8 @@ import util.InstancesUtil;
 import weka.classifiers.Classifier;
 import weka.classifiers.bayes.BayesNet;
 import weka.classifiers.bayes.NaiveBayes;
+import weka.classifiers.functions.SMO;
+import weka.classifiers.rules.JRip;
 import weka.classifiers.trees.J48;
 import weka.classifiers.trees.RandomForest;
 import weka.core.Instances;
@@ -360,10 +362,9 @@ public class Disruptor implements Callable<Integer> {
      */
     private void populateClassifiersList() {
         classifiersList.clear();
-        classifiersList.add( new RandomForest() );
-        classifiersList.add( new NaiveBayes() );
         classifiersList.add( new J48() );
-        classifiersList.add( new BayesNet() );
+        classifiersList.add( new SMO());
+        classifiersList.add( new JRip() );
     }
 
     /**
