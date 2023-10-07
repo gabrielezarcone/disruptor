@@ -331,9 +331,6 @@ public class DisruptorExperiment {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                if(c!=1){
-                    columnsSpan = 3;
-                }
             }
 
         }
