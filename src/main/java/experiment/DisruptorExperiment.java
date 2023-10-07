@@ -18,10 +18,7 @@ import weka.experiment.*;
 import javax.swing.*;
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -70,6 +67,13 @@ public class DisruptorExperiment {
     private InstancesResultListener instancesResultListener = new InstancesResultListener();
 
     /**
+     * @param instancesResultListener Outputs the received results in database to a Writer
+     * @return Outputs the received results in database to a Writer
+     */
+    @Getter @Setter
+    private DatabaseResultListener databaseResultListener = new DatabaseResultListener();
+
+    /**
      * @param classifiersList list of classifier used for the evaluation
      * @return list of classifier used for the evaluation
      */
@@ -81,7 +85,7 @@ public class DisruptorExperiment {
 
 
 
-    public DisruptorExperiment(ArrayList<Instances> perturbedDatasets, double trainPercentage, String outputFolderName){
+    public DisruptorExperiment(ArrayList<Instances> perturbedDatasets, double trainPercentage, String outputFolderName) throws Exception {
         setPerturbedDatasets(perturbedDatasets);
         setTrainPercentage(trainPercentage);
         setExperimentFolderName(outputFolderName + File.separator + experimentFolderName);
@@ -109,6 +113,7 @@ public class DisruptorExperiment {
     private void setupExperiment() {
         experiment.setPropertyArray(new Classifier[0]);
         experiment.setUsePropertyIterator(true);
+
 
         SplitEvaluator splitEvaluator = null;
         Classifier classifier = null;
@@ -207,6 +212,22 @@ public class DisruptorExperiment {
         experiment.runExperiment(true);
         log.info("Finishing...");
         experiment.postProcess();
+
+        // Save result in database
+//        File fileProps = new File(getClass().getClassLoader().getResource("DatabaseUtils.props").toURI());
+//        databaseResultListener.initialize(fileProps);
+//        databaseResultListener.setDatabaseURL("jdbc:postgresql://localhost:5432/postgres");
+//        databaseResultListener.setUsername("yourUserName");
+//        databaseResultListener.setPassword("yourPassword");
+//        experiment.setResultListener(databaseResultListener);
+//
+//        log.info("\n\n:::::::: {} ::::::::\n", getResultsTitle());
+//        log.info("Initializing...");
+//        experiment.initialize();
+//        log.info("Running...");
+//        experiment.runExperiment(true);
+//        log.info("Finishing...");
+//        experiment.postProcess();
     }
 
     /**

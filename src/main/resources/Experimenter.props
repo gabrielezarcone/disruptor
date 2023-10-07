@@ -1,0 +1,6 @@
+# the default destination ("simple")
+# possible values:
+#   ARFF file
+#   CSV file
+#   JDBC database
+Destination=JDBC database
