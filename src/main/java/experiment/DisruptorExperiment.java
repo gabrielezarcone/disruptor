@@ -1,15 +1,14 @@
 package experiment;
 
+import experiment.resultmatrix.ResultMatrixPlainTextArray;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
 import saver.Exporter;
 import util.ExceptionUtil;
 import weka.classifiers.Classifier;
-import weka.classifiers.bayes.BayesNet;
-import weka.classifiers.bayes.NaiveBayes;
-import weka.classifiers.trees.J48;
-import weka.classifiers.trees.RandomForest;
 import weka.core.Instances;
 import weka.core.Range;
 import weka.core.converters.ArffSaver;
@@ -20,7 +19,6 @@ import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.io.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 @Slf4j
 public class DisruptorExperiment {
@@ -245,7 +243,7 @@ public class DisruptorExperiment {
 
         setupTesterRowsCols(tester, result);
 
-        tester.setResultMatrix(new ResultMatrixPlainText());
+        tester.setResultMatrix(new ResultMatrixPlainTextArray());
         tester.setDisplayedResultsets(null);
         tester.setSignificanceLevel(0.05);
         tester.setShowStdDevs(true);
@@ -280,13 +278,67 @@ public class DisruptorExperiment {
     }
 
     private void printResults(PairedTTester tester) {
-        ResultMatrix matrix = tester.getResultMatrix();
-        log.info("Results:\n\n{}\n{}", getResultsTitle(), matrix);
+        ResultMatrixPlainTextArray matrix = (ResultMatrixPlainTextArray) tester.getResultMatrix();
+        log.info("Results:\n\n{}\n", getResultsTitle());
+        printResultsPlainText(matrix);
+        printResultsCSV(matrix);
+    }
+
+    private static void printResultsPlainText(ResultMatrix matrix) {
+        log.info("{}", matrix);
         for (int i = 0; i < matrix.getColCount(); i++) {
             log.info(matrix.getColName(i));
             log.info("    Perc. correct (mean): " + matrix.getMean(i, 0));
             log.info("    StdDev: " + matrix.getStdDev(i, 0));
         }
+    }
+
+    private void printResultsCSV(ResultMatrixPlainTextArray matrix) {
+        String[][] matrixArray = matrix.toArray();
+        String columnName = "";
+        int columnsSpan = 2; //Number of columns of the matrix used by the datasets. It's 2 only for the base dataset (the first). FOR THE OTHERS IS 3
+
+        StringWriter sw = new StringWriter();
+        CSVFormat csvFormat = CSVFormat.DEFAULT.builder()
+                .setHeader("dataset", "classifier", "correctness", "stDev", "v/ /*")
+                .build();
+
+        final CSVPrinter printer;
+        try {
+            printer = new CSVPrinter(sw, csvFormat);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        for (int c = 1; c < matrixArray[0].length; c+=columnsSpan) {
+            columnName = matrixArray[0][c].equals("") ? columnName : matrixArray[0][c]; // for the columns without a name use the previous name
+
+            for (int r = 1; r < matrixArray.length; r++) {
+                String rowName = matrixArray[r][0];
+                try {
+
+                    String evaluation;
+                    if(c==1){
+                        evaluation = "";
+                    }
+                    else {
+                        evaluation = matrixArray[r][c+2];
+                        columnsSpan = 3;
+                    }
+
+                    printer.printRecord(columnName, rowName, matrixArray[r][c], matrixArray[r][c+1], evaluation);
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                if(c!=1){
+                    columnsSpan = 3;
+                }
+            }
+
+        }
+        log.info("{}", sw.toString().trim());
+
     }
 
 
