@@ -63,6 +63,7 @@ public class Disruptor implements Callable<Integer> {
     private Instances testSet;
     private final Exporter arffExport = new Exporter( new ArffSaver() );
     private final Exporter csvExport = new Exporter( new CSVSaver() );
+    private int executionCounter = 0;
 
     /**
      * List of feature selection algorithms
@@ -231,6 +232,8 @@ public class Disruptor implements Callable<Integer> {
     private void disrupt(Instances dataset) throws Exception {
 
         for( AbstractAttributeSelector attributeSelectorAlgorithm : selectedFeatureMap.keySet() ){
+
+            executionCounter++;
 
             log.info("\n\n===========================================\nfeature selection algorithm: {} K:{}\n===========================================\n", attributeSelectorAlgorithm.getName(), attributeSelectorAlgorithm.getKnowledge());
 
@@ -483,6 +486,13 @@ public class Disruptor implements Callable<Integer> {
      */
     private void evaluateAttacks(String resultsTitle) throws Exception {
         DisruptorExperiment experiment = new DisruptorExperiment(perturbedDatasets, trainPercentage, baseFolderName);
+        if(executionCounter==1){
+            experiment.logInfo( "\n" +
+                    "=============================================================\n" +
+                    "             START OF THE EXPERIMENT ["+startDate+"]                    \n" +
+                    "=============================================================\n"
+            );
+        }
         experiment.setClassifiersList(classifiersList);
         experiment.setResultsTitle(resultsTitle);
         experiment.start();

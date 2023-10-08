@@ -207,7 +207,8 @@ public class DisruptorExperiment {
         log.info("Initializing...");
         experiment.initialize();
         log.info("Running...");
-        experiment.runExperiment(true);
+        boolean verbose = false;
+        experiment.runExperiment(verbose);
         log.info("Finishing...");
         experiment.postProcess();
 
@@ -336,6 +337,10 @@ public class DisruptorExperiment {
         }
         log.info("{}", sw.toString().trim());
 
+    }
+
+    public void logInfo(String message){
+        log.info(message);
     }
 
 
