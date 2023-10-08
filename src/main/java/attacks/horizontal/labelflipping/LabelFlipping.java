@@ -8,6 +8,8 @@ import weka.core.DenseInstance;
 import weka.core.Instance;
 import weka.core.Instances;
 
+import java.util.stream.IntStream;
+
 /**
  * A standard Label flipping attack that cycles the class values:
  * A → B
@@ -29,7 +31,7 @@ public class LabelFlipping extends Attack{
     public Instances attack() {
         Instances perturbedInstances = new Instances(getTarget());
 
-        for(int i=0; i<attackSize(); i++){
+        IntStream.range(0, attackSize()).parallel().forEach(i -> {
             Instance instance = perturbedInstances.instance(i);
             int classValuesNumber = instance.numClasses();
             double newClassValue = ( instance.classValue() + 1 ) % classValuesNumber;
@@ -40,7 +42,7 @@ public class LabelFlipping extends Attack{
 
             instance.setClassValue(newClassValue);
             perturbedInstances.set(i, instance);
-        }
+        });
 
         return perturbedInstances;
     }

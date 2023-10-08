@@ -5,6 +5,8 @@ import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.Instances;
 
+import java.util.stream.IntStream;
+
 public class NullAttack extends Attack {
 
     public NullAttack(Instances target) {
@@ -19,7 +21,7 @@ public class NullAttack extends Attack {
     public Instances attack() {
         Instances perturbedInstances = new Instances(getTarget());
         // Perform the attack only in the part of the target specified by the capacity
-        for(int i=0; i<attackSize(); i++){
+        IntStream.range(0, attackSize()).parallel().forEach(i -> {
             Instance instanceToAttack = perturbedInstances.instance(i);
 
             // Perform the attack only for the selected feature
@@ -28,7 +30,7 @@ public class NullAttack extends Attack {
             }
 
             perturbedInstances.set(i, instanceToAttack);
-        }
+        });
         return perturbedInstances;
     }
 

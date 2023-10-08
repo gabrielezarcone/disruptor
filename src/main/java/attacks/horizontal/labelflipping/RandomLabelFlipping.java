@@ -8,6 +8,7 @@ import weka.core.Instances;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
+import java.util.stream.IntStream;
 
 public class RandomLabelFlipping extends Attack {
 
@@ -26,13 +27,13 @@ public class RandomLabelFlipping extends Attack {
 
         Instances perturbedInstances = new Instances(getTarget());
         // Perform the attack only in the part of the target specified by the capacity
-        for(int i=0; i<attackSize(); i++){
+        IntStream.range(0, attackSize()).parallel().forEach(i -> {
             Instance flippedInstance = perturbedInstances.instance(i);
             double flippedClass = newClassValue(classAttribute, flippedInstance);
             flippedInstance.setClassValue(flippedClass);
 
             perturbedInstances.set(i, flippedInstance);
-        }
+        });
         return perturbedInstances;
     }
 

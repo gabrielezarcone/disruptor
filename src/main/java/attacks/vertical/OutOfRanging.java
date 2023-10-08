@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Random;
+import java.util.stream.IntStream;
 
 public class OutOfRanging extends Attack {
     public OutOfRanging(Instances target) {
@@ -30,7 +31,7 @@ public class OutOfRanging extends Attack {
         HashMap<Object, Instances> bucketsMap = InstancesUtil.bucketsByClassInstances(perturbedInstances);
 
         // Perform the attack only in the part of the target specified by the capacity
-        for(int i=0; i<attackSize(); i++){
+        IntStream.range(0, attackSize()).parallel().forEach(i -> {
             Instance instanceToAttack = perturbedInstances.instance(i);
 
             // Calculate the next class value
@@ -53,7 +54,7 @@ public class OutOfRanging extends Attack {
             }
 
             perturbedInstances.set(i, instanceToAttack);
-        }
+        });
         return perturbedInstances;
     }
 

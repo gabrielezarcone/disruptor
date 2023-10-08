@@ -9,6 +9,7 @@ import weka.core.Instances;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.stream.IntStream;
 
 public class MeanPerClassAttack extends Attack {
 
@@ -28,7 +29,7 @@ public class MeanPerClassAttack extends Attack {
         HashMap<Object, Instances> bucketsMap = InstancesUtil.bucketsByClassInstances(perturbedInstances);
 
         // Perform the attack only in the part of the target specified by the capacity
-        for(int i=0; i<attackSize(); i++){
+        IntStream.range(0, attackSize()).parallel().forEach(i -> {
             Instance instanceToAttack = perturbedInstances.instance(i);
 
             // Calculate the next class value
@@ -48,7 +49,7 @@ public class MeanPerClassAttack extends Attack {
             }
 
             perturbedInstances.set(i, instanceToAttack);
-        }
+        });
         return perturbedInstances;
     }
 
