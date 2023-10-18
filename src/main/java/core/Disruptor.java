@@ -528,7 +528,12 @@ public class Disruptor implements Callable<Integer> {
 
         featureSelectionAlgorithms.forEach( algorithm -> {
             knowledgeList.forEach( knowledge -> {
-                AbstractAttributeSelector newAlgorithm = algorithm.copy();
+                AbstractAttributeSelector newAlgorithm = null;
+                try {
+                    newAlgorithm = algorithm.copy();
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
                 newAlgorithm.setKnowledge( knowledge );
                 newFeatureSelectionAlgorithms.add( newAlgorithm );
             } );

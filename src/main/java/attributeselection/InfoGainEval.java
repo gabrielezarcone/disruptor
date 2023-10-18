@@ -16,7 +16,7 @@ public class InfoGainEval extends AbstractAttributeSelector {
         super(instances);
     }
 
-    public InfoGainEval(AbstractAttributeSelector selectorToCopy) {
+    public InfoGainEval(AbstractAttributeSelector selectorToCopy) throws Exception {
         super(selectorToCopy);
     }
 
@@ -45,7 +45,7 @@ public class InfoGainEval extends AbstractAttributeSelector {
     }
 
     @Override
-    public AbstractAttributeSelector copy() {
+    public AbstractAttributeSelector copy() throws Exception {
         return new InfoGainEval(this);
     }
 

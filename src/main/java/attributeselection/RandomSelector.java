@@ -13,12 +13,12 @@ public class RandomSelector extends AbstractAttributeSelector{
         super(instances);
     }
 
-    public RandomSelector(AbstractAttributeSelector selector) {
+    public RandomSelector(AbstractAttributeSelector selector) throws Exception {
         super(selector);
     }
 
     @Override
-    public AbstractAttributeSelector copy() {
+    public AbstractAttributeSelector copy() throws Exception {
         return new RandomSelector(this);
     }
 

@@ -1,5 +1,6 @@
 package attributeselection;
 
+import filters.ApplyFilter;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -7,6 +8,7 @@ import weka.core.Attribute;
 import weka.core.Instances;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 
 
@@ -30,14 +32,14 @@ public abstract class AbstractAttributeSelector {
     /**
      * @return a copy of the object
      */
-    public abstract AbstractAttributeSelector copy();
+    public abstract AbstractAttributeSelector copy() throws Exception;
 
     /**
      * Copy constructor. Make a deep copy of the object passed as a parameter
      * @param selectorToCopy object to copy
      */
-    protected AbstractAttributeSelector(AbstractAttributeSelector selectorToCopy){
-        this.targetInstances = new Instances( selectorToCopy.getTargetInstances() ) ;
+    protected AbstractAttributeSelector(AbstractAttributeSelector selectorToCopy) throws Exception {
+        this.targetInstances = ApplyFilter.randomize(selectorToCopy.getTargetInstances(), 0);
         this.featureRanksMap = new HashMap<>( selectorToCopy.getFeatureRanksMap() );
         if(this.rankedAttributes != null){
             this.rankedAttributes = selectorToCopy.getRankedAttributes().clone();
@@ -61,7 +63,7 @@ public abstract class AbstractAttributeSelector {
     public void eval() {
         reduceInstancesByKnowledge();
         double[][] attrRanks = selectAttributes();
-        log.debug("{} {} Selected features: {}", getName(), getKnowledge(), Arrays.deepToString(attrRanks));
+        log.info("{} {} Selected features: {}", getName(), getKnowledge(), Arrays.deepToString(attrRanks));
         populateFields(attrRanks);
     }
 

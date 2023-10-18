@@ -100,7 +100,7 @@ public class ApplyFilter {
     }
 
     /**
-     * Randomize the instances
+     * Randomly shuffles the order of instances
      *
      * @param instances Instances to randomize
      * @param seed the seed used for the randomization
