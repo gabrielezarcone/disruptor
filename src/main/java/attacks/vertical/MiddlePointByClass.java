@@ -3,6 +3,7 @@ package attacks.vertical;
 import attacks.Attack;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import util.InstancesUtil;
 import weka.core.Attribute;
 import weka.core.Instance;
@@ -10,9 +11,11 @@ import weka.core.Instances;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.stream.IntStream;
 
+@Slf4j
 public class MiddlePointByClass extends Attack {
 
     /**
@@ -35,6 +38,8 @@ public class MiddlePointByClass extends Attack {
     @Override
     public Instances attack() {
         Instances perturbedInstances = new Instances(getTarget());
+        int numClasses = perturbedInstances.numClasses();
+        ArrayList<Object> classValuesList = Collections.list(perturbedInstances.classAttribute().enumerateValues());
 
         // Perform the attack only in the part of the target specified by the capacity
         IntStream.range(0, attackSize()).parallel().forEach(i -> {
@@ -42,9 +47,8 @@ public class MiddlePointByClass extends Attack {
 
             // Calculate the next class value
             double classValue = instanceToAttack.classValue();
-            double nextClassValueIndex = ( classValue + 1 ) % perturbedInstances.numClasses();
+            double nextClassValueIndex = ( classValue + 1 ) % numClasses;
             // Fetch the class obj to perform get from the bucket map
-            ArrayList<Object> classValuesList = Collections.list(perturbedInstances.classAttribute().enumerateValues());
             Object nextClassValue = classValuesList.get((int) nextClassValueIndex);
 
             // Perform the attack only for the selected feature
