@@ -4,6 +4,7 @@ import experiment.resultmatrix.ResultMatrixPlainTextArray;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import model.perturbeddataset.PerturbedDataset;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import saver.Exporter;
@@ -34,7 +35,7 @@ public class DisruptorExperiment {
      * @return list of dataset to use during the experiment
      */
     @Getter @Setter
-    private ArrayList<Instances> perturbedDatasets;
+    private ArrayList<PerturbedDataset> perturbedDatasets;
 
     /**
      * @param trainPercentage percentage to use for the train set
@@ -83,7 +84,7 @@ public class DisruptorExperiment {
 
 
 
-    public DisruptorExperiment(ArrayList<Instances> perturbedDatasets, double trainPercentage, String outputFolderName) throws Exception {
+    public DisruptorExperiment(ArrayList<PerturbedDataset> perturbedDatasets, double trainPercentage, String outputFolderName) throws Exception {
         setPerturbedDatasets(perturbedDatasets);
         setTrainPercentage(trainPercentage);
         setExperimentFolderName(outputFolderName + File.separator + experimentFolderName);
@@ -115,7 +116,7 @@ public class DisruptorExperiment {
 
         SplitEvaluator splitEvaluator = null;
         Classifier classifier = null;
-        Instances dataset = perturbedDatasets.get(0);
+        Instances dataset = perturbedDatasets.get(0).getDataset();
         if ( dataset.classAttribute().isNominal() ) {
             classification = true;
             splitEvaluator  = new ClassifierSplitEvaluator();
@@ -177,16 +178,16 @@ public class DisruptorExperiment {
 
     private void setupDatasets() {
         DefaultListModel<File> model = new DefaultListModel<>();
-        for ( int i=0; i<perturbedDatasets.size(); i++){
-            Instances perturbedDataset = perturbedDatasets.get(i);
-            Exporter arffExport = new Exporter( new ArffSaver() );
+        for (PerturbedDataset perturbedDatasetObject : perturbedDatasets) {
+            Instances perturbedDataset = perturbedDatasetObject.getDataset();
+            Exporter arffExport = new Exporter(new ArffSaver());
             try {
-                arffExport.exportInFolder( perturbedDataset, experimentFolderName, perturbedDataset.relationName()+"_EXP_"+i );
+                arffExport.exportInFolder(perturbedDataset, experimentFolderName, perturbedDataset.relationName() + "_EXP_run" + perturbedDatasetObject.getParams().getRunNumber());
                 File datasetFile = arffExport.getExportedFile();
                 model.addElement(datasetFile);
             } catch (IOException e) {
                 log.error("Problem adding datasets to the experiment");
-                log.debug("dataset relation name: " + perturbedDataset.relationName() );
+                log.debug("dataset relation name: " + perturbedDataset.relationName());
                 ExceptionUtil.logException(e, log);
             }
         }

@@ -13,6 +13,8 @@ import filters.ApplyClassBalancer;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import model.perturbeddataset.PerturbedDataset;
+import model.perturbeddataset.PerturbedDatasetParams;
 import picocli.CommandLine;
 import properties.versionproviders.DisruptorVersionProvider;
 import roc.ROCDatasetsList;
@@ -58,9 +60,8 @@ public class Disruptor implements Callable<Integer> {
     private String experimentFolderName = EXPERIMENT_FOLDER;
     private ArrayList<Attack> attacksList = new ArrayList<>();
     private ArrayList<Classifier> classifiersList = new ArrayList<>();
-    private ArrayList<Instances> perturbedDatasets = new ArrayList<>();
+    private ArrayList<PerturbedDataset> perturbedDatasets = new ArrayList<>();
     ROCDatasetsList perturbedDataMapForROC = new ROCDatasetsList();
-    private Instances testSet;
     private final Exporter arffExport = new Exporter( new ArffSaver() );
     private final Exporter csvExport = new Exporter( new CSVSaver() );
     private int executionCounter = 0;
@@ -276,11 +277,13 @@ public class Disruptor implements Callable<Integer> {
         // Split Train and Test set
         Instances[] splitTrainTest = InstancesUtil.splitTrainTest(runDataset, trainPercentage, run);
         Instances trainset = splitTrainTest[0];
-        testSet = splitTrainTest[1];
+        Instances testSet = splitTrainTest[1];
 
         if(experimenter){
             // To use as a reference, add the input dataset as the first list element
-            perturbedDatasets.add(trainset);
+            PerturbedDatasetParams params = new PerturbedDatasetParams(attributeSelectorAlgorithm.getName(), run);
+            PerturbedDataset perturbedDataset = new PerturbedDataset(trainset, testSet, params);
+            perturbedDatasets.add(perturbedDataset);
         }
 
         // Export test set
@@ -291,7 +294,7 @@ public class Disruptor implements Callable<Integer> {
         populateClassifiersList();
 
         // Attack main loop
-        performAttacks(trainset, attacksList, capacitiesList, featuresCapacitiesList, attributeSelectorAlgorithm);
+        performAttacks(trainset, testSet, attacksList, capacitiesList, featuresCapacitiesList, attributeSelectorAlgorithm, run);
     }
 
     private void clearFieldsAfterAllRuns() {
@@ -302,23 +305,23 @@ public class Disruptor implements Callable<Integer> {
     }
 
     private void showROCsForAttacks() {
-        perturbedDataMapForROC.keySet().forEach( attackName -> {
-
-            HashMap<ROCDatasetsList.CapacitiesPair, Instances> attackPerturbedDatasets = perturbedDataMapForROC.getCapacitiesMap(attackName) ;
-
-            log.info("Started ROC curves visualization for attack {}", attackName);
-            log.info("Running...");
-
-            for(Classifier classifier : classifiersList){
-                log.debug("Started ROC for attack {} and classifier {}", attackName, classifier.getClass().getSimpleName());
-                ROCGenerator rocGenerator = new ROCGenerator(testSet, classifier, attackName);
-                rocGenerator.visualizeROCCurves(new ArrayList<>(attackPerturbedDatasets.values()));
-                log.debug("Finished ROC for attack {} and classifier {}", attackName, classifier.getClass().getSimpleName());
-            }
-
-            log.info("Finished ROC curves visualization for attack {}", attackName);
-
-        } );
+//        perturbedDataMapForROC.keySet().forEach( attackName -> {
+//
+//            HashMap<ROCDatasetsList.CapacitiesPair, Instances> attackPerturbedDatasets = perturbedDataMapForROC.getCapacitiesMap(attackName) ;
+//
+//            log.info("Started ROC curves visualization for attack {}", attackName);
+//            log.info("Running...");
+//
+//            for(Classifier classifier : classifiersList){
+//                log.debug("Started ROC for attack {} and classifier {}", attackName, classifier.getClass().getSimpleName());
+//                ROCGenerator rocGenerator = new ROCGenerator(testSet, classifier, attackName);
+//                rocGenerator.visualizeROCCurves(new ArrayList<>(attackPerturbedDatasets.values()));
+//                log.debug("Finished ROC for attack {} and classifier {}", attackName, classifier.getClass().getSimpleName());
+//            }
+//
+//            log.info("Finished ROC curves visualization for attack {}", attackName);
+//
+//        } );
     }
 
     /**
@@ -378,7 +381,7 @@ public class Disruptor implements Callable<Integer> {
      * @param featuresCapacitiesList list of capacities for features
      * @param attributeSelectorAlgorithm
      */
-    private void performAttacks(Instances trainingSet, ArrayList<Attack> attacksList, ArrayList<Double> capacitiesList, ArrayList<Double> featuresCapacitiesList, AbstractAttributeSelector attributeSelectorAlgorithm){
+    private void performAttacks(Instances trainingSet, Instances testSet, ArrayList<Attack> attacksList, ArrayList<Double> capacitiesList, ArrayList<Double> featuresCapacitiesList, AbstractAttributeSelector attributeSelectorAlgorithm, int run){
         // Nested loop between attacks list and capacities list
         attacksList.forEach( attack -> {
             String attackClassName = attack.getClass().getSimpleName();
@@ -387,12 +390,16 @@ public class Disruptor implements Callable<Integer> {
 
             featuresCapacitiesList.forEach( featureCapacity -> {
                 capacitiesList.forEach(capacity -> {
-                    log.info("\tfeatures capacity: {}\tcapacity: {}\t knowledge: {}", featureCapacity, capacity, attributeSelectorAlgorithm.getKnowledge());
+
+                    String fsAlgorithmName = attributeSelectorAlgorithm.getName();
+                    double knowledge = attributeSelectorAlgorithm.getKnowledge();
+
+                    log.info("\tfeatures capacity: {}\tcapacity: {}\t knowledge: {}", featureCapacity, capacity, knowledge);
 
                     // Define an attack code unique for this attack run
                     String attackCode = attackName +
-                            "_" + attributeSelectorAlgorithm.getName() +
-                            "_K" + attributeSelectorAlgorithm.getKnowledge() +
+                            "_" + fsAlgorithmName +
+                            "_K" + knowledge +
                             "_F" + featureCapacity +
                             "_C" + capacity ;
 
@@ -405,7 +412,9 @@ public class Disruptor implements Callable<Integer> {
                     perturbedInstances.setRelationName(attackCode);
 
                     if(experimenter){
-                        perturbedDatasets.add(perturbedInstances);
+                        PerturbedDatasetParams params = new PerturbedDatasetParams(fsAlgorithmName, attack, capacity, featureCapacity, knowledge, run);
+                        PerturbedDataset perturbedDatasetObject = new PerturbedDataset(perturbedInstances, testSet, params);
+                        perturbedDatasets.add(perturbedDatasetObject);
                     }
                     if(roc){
                         try {
@@ -428,6 +437,7 @@ public class Disruptor implements Callable<Integer> {
 
                 });
             });
+            log.info("Finished attack {}", attackClassName);
         });
     }
 
@@ -464,12 +474,12 @@ public class Disruptor implements Callable<Integer> {
      * @param export true if the train+test file should be exported
      */
     private void appendTestSet(boolean export){
-        perturbedDatasets.forEach( dataset -> {
+        perturbedDatasets.forEach( perturbedDataset -> {
             try {
-                InstancesUtil.addAllInstances(dataset, testSet);
+                InstancesUtil.addAllInstances( perturbedDataset.getDataset(), perturbedDataset.getTestSet());
 
                 if(export){
-                    exportTrainTestSet(dataset);
+                    exportTrainTestSet( perturbedDataset.getDataset() );
                 }
 
             } catch (Exception e) {

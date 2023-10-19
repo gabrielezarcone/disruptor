@@ -11,16 +11,27 @@ import lombok.Setter;
 @EqualsAndHashCode
 public class PerturbedDatasetParams {
 
-    @Getter @Setter
-    private String relationshipName;
+    public PerturbedDatasetParams(String featureSelectionAlgorithm,int runNumber){
+        this.featureSelectionAlgorithm = featureSelectionAlgorithm;
+        this.runNumber = runNumber;
+    }
 
     @Getter @Setter
-    private Attack attack;
+    private String featureSelectionAlgorithm = "";
 
     @Getter @Setter
-    private double capacity;
+    private Attack attack = null;
 
     @Getter @Setter
-    private double knowledge;
+    private double capacity = 0;
+
+    @Getter @Setter
+    private double featuresCapacity = 0;
+
+    @Getter @Setter
+    private double knowledge = 0;
+
+    @Getter @Setter
+    private int runNumber = 0;
 
 }
