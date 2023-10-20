@@ -48,11 +48,6 @@ public class MiddlePoint extends Attack {
         return perturbedInstances;
     }
 
-    @Override
-    public int evaluateAbility() {
-        return 0;
-    }
-
     private double featureMiddlePoint(Attribute feature){
         double sumValues = 0;
         int instancesNumber = getTarget().size();

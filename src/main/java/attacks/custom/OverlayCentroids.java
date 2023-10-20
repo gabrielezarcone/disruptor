@@ -82,11 +82,6 @@ public class OverlayCentroids extends Attack {
         return instances;
     }
 
-    @Override
-    public int evaluateAbility() {
-        return 0;
-    }
-
     /**
      * Start the clustering of the instances
      * @throws Exception if it cannot build the clustering

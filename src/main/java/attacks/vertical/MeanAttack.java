@@ -34,9 +34,4 @@ public class MeanAttack extends Attack {
         });
         return perturbedInstances;
     }
-
-    @Override
-    public int evaluateAbility() {
-        return 0;
-    }
 }

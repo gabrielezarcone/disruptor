@@ -64,11 +64,6 @@ public class MiddlePointByClass extends Attack {
         return perturbedInstances;
     }
 
-    @Override
-    public int evaluateAbility() {
-        return 0;
-    }
-
     private double featureMiddlePoint(Attribute feature, Object classValue){
 
         // create buckets of instances grouped by class value

@@ -135,11 +135,6 @@ public class SideBySide extends Attack {
         return instanceClass / 1000;
     }
 
-    @Override
-    public int evaluateAbility() {
-        return 0;
-    }
-
     public Object getReferenceClassObject() {
         return InstanceUtil.getClassValueObject(getTarget().firstInstance(), referenceClass);
     }

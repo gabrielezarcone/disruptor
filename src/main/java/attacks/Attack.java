@@ -73,12 +73,6 @@ public abstract class Attack {
      */
     public abstract Instances attack();
 
-    /**
-     * Calculate the ability of the attack to reduce the separation space between the classes
-     * @return the calculated ability
-     */
-    public abstract int evaluateAbility();
-
 
 
     // --------------------------------------------------------------------------------------------------------

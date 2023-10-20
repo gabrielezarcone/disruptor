@@ -57,10 +57,5 @@ public class RandomLabelFlipping extends Attack {
         return newRandomClass;
     }
 
-    @Override
-    public int evaluateAbility() {
-        return 0;
-    }
-
 
 }
