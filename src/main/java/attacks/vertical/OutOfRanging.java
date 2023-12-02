@@ -6,10 +6,7 @@ import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.Instances;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.IntStream;
 
 public class OutOfRanging extends Attack {
@@ -41,15 +38,21 @@ public class OutOfRanging extends Attack {
             Object classValue = classValuesList.get((int) classValueIndex);
 
             Instances instancesPerClass = bucketsMap.get(classValue);
-            int instancesLength = instancesPerClass.size();
 
             // Perform the attack only for the selected feature
             for( Attribute feature : getReducedFeatureSelected() ){
 
-                // Get a random value from the same class
-                Instance randomInstanceFromSameClass = instancesPerClass.get( random.nextInt(instancesLength) );
-                double randomValueFromSameClass = randomInstanceFromSameClass.value(feature);
-                instanceToAttack.setValue(feature, randomValueFromSameClass);
+                //Set containing the single values assumed by the feature with the selected class
+                Set<Double> range = new HashSet<>();
+                Collections.list( instancesPerClass.enumerateInstances()).forEach( in -> range.add(in.value(feature)));
+
+                // Get a random value out of the range of the same class
+                double randomValueOutOfRange;
+                do {
+                    randomValueOutOfRange = random.nextDouble();
+                }while ( !range.contains(randomValueOutOfRange));
+
+                instanceToAttack.setValue(feature, randomValueOutOfRange);
 
             }
 
