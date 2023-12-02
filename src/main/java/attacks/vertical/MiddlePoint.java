@@ -9,7 +9,7 @@ import weka.core.Instances;
 
 import java.util.stream.IntStream;
 
-public class MiddlePoint extends Attack {
+public class MiddlePoint extends VerticalAttack {
 
     /**
      * Multiplication factor used for moving the instances towards the middle point
@@ -29,23 +29,21 @@ public class MiddlePoint extends Attack {
     }
 
     @Override
-    public Instances attack() {
-        Instances perturbedInstances = new Instances(getTarget());
-        // Perform the attack only in the part of the target specified by the capacity
-        IntStream.range(0, attackSize()).parallel().forEach(i -> {
-            Instance instanceToAttack = perturbedInstances.instance(i);
+    protected void disruptDataset(Instances datasetToAttack) {
+        // Do nothing
+    }
 
-            // Perform the attack only for the selected feature
-            for( Attribute feature : getReducedFeatureSelected() ){
-                double oldValue = instanceToAttack.value(feature);
-                double distanceFromMiddle = featureMiddlePoint(feature) - oldValue;
-                double newValue = getMultiplicationFactor() * distanceFromMiddle + oldValue;
-                instanceToAttack.setValue(feature, newValue);
-            }
+    @Override
+    protected void disruptInstance(Instances datasetToAttack, Instance instanceToAttack) {
+        // Do nothing
+    }
 
-            perturbedInstances.set(i, instanceToAttack);
-        });
-        return perturbedInstances;
+    @Override
+    protected void disruptFeature(Instance instanceToAttack, Attribute featureToAttack) {
+        double oldValue = instanceToAttack.value(featureToAttack);
+        double distanceFromMiddle = featureMiddlePoint(featureToAttack) - oldValue;
+        double newValue = getMultiplicationFactor() * distanceFromMiddle + oldValue;
+        instanceToAttack.setValue(featureToAttack, newValue);
     }
 
     private double featureMiddlePoint(Attribute feature){

@@ -7,7 +7,7 @@ import weka.core.Instances;
 
 import java.util.stream.IntStream;
 
-public class MeanAttack extends Attack {
+public class MeanAttack extends VerticalAttack {
 
     public MeanAttack(Instances target) {
         super(target);
@@ -18,20 +18,18 @@ public class MeanAttack extends Attack {
     }
 
     @Override
-    public Instances attack() {
-        Instances perturbedInstances = new Instances(getTarget());
-        // Perform the attack only in the part of the target specified by the capacity
-        IntStream.range(0, attackSize()).parallel().forEach(i -> {
-            Instance instanceToAttack = perturbedInstances.instance(i);
+    protected void disruptDataset(Instances datasetToAttack) {
+        // Do nothing
+    }
 
-            // Perform the attack only for the selected feature
-            for( Attribute feature : getReducedFeatureSelected() ){
-                double meanOrMode = getTarget().meanOrMode(feature);
-                instanceToAttack.setValue(feature, meanOrMode);
-            }
+    @Override
+    protected void disruptInstance(Instances datasetToAttack, Instance instanceToAttack) {
+        // Do nothing
+    }
 
-            perturbedInstances.set(i, instanceToAttack);
-        });
-        return perturbedInstances;
+    @Override
+    protected void disruptFeature(Instance instanceToAttack, Attribute featureToAttack) {
+        double meanOrMode = getTarget().meanOrMode(featureToAttack);
+        instanceToAttack.setValue(featureToAttack, meanOrMode);
     }
 }
