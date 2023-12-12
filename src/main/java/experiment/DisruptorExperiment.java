@@ -56,7 +56,7 @@ public class DisruptorExperiment {
      * @return true if is a classification experiment
      */
     @Getter @Setter
-    private boolean classification = false;
+    private boolean classification = true;
 
     /**
      * @param instancesResultListener Outputs the received results in arff format to a Writer
@@ -64,13 +64,6 @@ public class DisruptorExperiment {
      */
     @Getter @Setter
     private InstancesResultListener instancesResultListener = new InstancesResultListener();
-
-    /**
-     * @param instancesResultListener Outputs the received results in database to a Writer
-     * @return Outputs the received results in database to a Writer
-     */
-    @Getter @Setter
-    private DatabaseResultListener databaseResultListener = new DatabaseResultListener();
 
     /**
      * @param classifiersList list of classifier used for the evaluation
@@ -123,6 +116,7 @@ public class DisruptorExperiment {
             classifier = ((ClassifierSplitEvaluator) splitEvaluator).getClassifier();
         }
         else if ( dataset.classAttribute().isNumeric() ) {
+            classification = false;
             splitEvaluator  = new RegressionSplitEvaluator();
             classifier = ((RegressionSplitEvaluator) splitEvaluator).getClassifier();
         }
@@ -209,6 +203,9 @@ public class DisruptorExperiment {
         experiment.initialize();
         log.info("Running...");
         boolean verbose = false;
+        if(log.isDebugEnabled()){
+            verbose = true;
+        }
         experiment.runExperiment(verbose);
         log.info("Finishing...");
         experiment.postProcess();
@@ -287,7 +284,7 @@ public class DisruptorExperiment {
     }
 
     private static void printResultsPlainText(ResultMatrix matrix) {
-        log.info("{}", matrix);
+        log.info("\n{}", matrix);
         for (int i = 0; i < matrix.getColCount(); i++) {
             log.info(matrix.getColName(i));
             log.info("    Perc. correct (mean): " + matrix.getMean(i, 0));
