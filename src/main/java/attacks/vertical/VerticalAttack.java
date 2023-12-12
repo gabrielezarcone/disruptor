@@ -5,7 +5,6 @@ import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.Instances;
 
-import java.util.HashMap;
 import java.util.stream.IntStream;
 
 public abstract class VerticalAttack extends Attack {
@@ -21,17 +20,13 @@ public abstract class VerticalAttack extends Attack {
     public Instances attack() {
         Instances perturbedInstances = new Instances(getTarget());
 
-        disruptDataset(perturbedInstances);
-
         // Perform the attack only in the part of the target specified by the capacity
         IntStream.range(0, attackSize()).parallel().forEach(i -> {
             Instance instanceToAttack = perturbedInstances.instance(i);
 
-            disruptInstance(perturbedInstances, instanceToAttack);
-
             // Perform the attack only for the selected feature
             for( Attribute feature : getReducedFeatureSelected() ){
-                disruptFeature(instanceToAttack, feature);
+                verticalDisrupt(instanceToAttack, feature);
             }
 
             perturbedInstances.set(i, instanceToAttack);
@@ -40,31 +35,12 @@ public abstract class VerticalAttack extends Attack {
     }
 
     /**
-     * Disruption.
-     * Use this method to disrupt the entire dataset or to use information contained in the dataset
-     * to perform the disruption of the instance or of the feature
-     *
-     * @param datasetToAttack dataset to attack
-     */
-    protected abstract void disruptDataset(Instances datasetToAttack);
-
-    /**
-     * Horizontal disruption.
-     * Use this method to disrupt the entire instance or to use information contained in the instance
-     * to perform the disruption of the feature.
-     *
-     * @param datasetToAttack dataset to attack
-     * @param instanceToAttack instance selected for the disruption
-     */
-    protected abstract void disruptInstance(Instances datasetToAttack, Instance instanceToAttack) ;
-
-    /**
      * Vertical disruption.
      * Use this method to disrupt the selected instance at the selected attribute.
      *
      * @param instanceToAttack instance selected for the disruption
      * @param featureToAttack feature selected for the disruption
      */
-    protected abstract void disruptFeature(Instance instanceToAttack, Attribute featureToAttack) ;
+    protected abstract void verticalDisrupt(Instance instanceToAttack, Attribute featureToAttack) ;
 
 }

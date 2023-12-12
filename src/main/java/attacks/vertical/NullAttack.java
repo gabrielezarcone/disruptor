@@ -18,17 +18,7 @@ public class NullAttack extends VerticalAttack {
     }
 
     @Override
-    protected void disruptDataset(Instances datasetToAttack) {
-        // Do nothing
-    }
-
-    @Override
-    protected void disruptInstance(Instances datasetToAttack, Instance instanceToAttack) {
-        // Do nothing
-    }
-
-    @Override
-    protected void disruptFeature(Instance instanceToAttack, Attribute featureToAttack) {
+    protected void verticalDisrupt(Instance instanceToAttack, Attribute featureToAttack) {
         instanceToAttack.setValue(featureToAttack, 0);
     }
 

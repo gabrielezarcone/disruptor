@@ -29,17 +29,7 @@ public class MiddlePoint extends VerticalAttack {
     }
 
     @Override
-    protected void disruptDataset(Instances datasetToAttack) {
-        // Do nothing
-    }
-
-    @Override
-    protected void disruptInstance(Instances datasetToAttack, Instance instanceToAttack) {
-        // Do nothing
-    }
-
-    @Override
-    protected void disruptFeature(Instance instanceToAttack, Attribute featureToAttack) {
+    protected void verticalDisrupt(Instance instanceToAttack, Attribute featureToAttack) {
         double oldValue = instanceToAttack.value(featureToAttack);
         double distanceFromMiddle = featureMiddlePoint(featureToAttack) - oldValue;
         double newValue = getMultiplicationFactor() * distanceFromMiddle + oldValue;
