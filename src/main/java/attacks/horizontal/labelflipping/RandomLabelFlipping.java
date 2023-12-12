@@ -1,6 +1,7 @@
 package attacks.horizontal.labelflipping;
 
 import attacks.Attack;
+import attacks.horizontal.HorizontalAttack;
 import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.Instances;
@@ -10,31 +11,24 @@ import java.util.Collections;
 import java.util.Random;
 import java.util.stream.IntStream;
 
-public class RandomLabelFlipping extends Attack {
+public class RandomLabelFlipping extends HorizontalAttack {
+
+    Attribute classAttribute;
 
     public RandomLabelFlipping(Instances target){
         super(target);
+        classAttribute =  getTarget().classAttribute();
     }
 
     public RandomLabelFlipping(Instances target, double capacity, double featuresCapacity, double knowledge) {
         super(target, capacity, featuresCapacity, knowledge);
+        classAttribute =  getTarget().classAttribute();
     }
 
-
     @Override
-    public Instances attack() {
-        Attribute classAttribute =  getTarget().classAttribute();
-
-        Instances perturbedInstances = new Instances(getTarget());
-        // Perform the attack only in the part of the target specified by the capacity
-        IntStream.range(0, attackSize()).parallel().forEach(i -> {
-            Instance flippedInstance = perturbedInstances.instance(i);
-            double flippedClass = newClassValue(classAttribute, flippedInstance);
-            flippedInstance.setClassValue(flippedClass);
-
-            perturbedInstances.set(i, flippedInstance);
-        });
-        return perturbedInstances;
+    protected void horizontalDisrupt(Instance flippedInstance) {
+        double flippedClass = newClassValue(classAttribute, flippedInstance);
+        flippedInstance.setClassValue(flippedClass);
     }
 
     /**

@@ -1,14 +1,9 @@
 package attacks.horizontal.labelflipping;
 
-import attacks.Attack;
+import attacks.horizontal.HorizontalAttack;
 import lombok.extern.slf4j.Slf4j;
-import util.InstanceUtil;
-import util.InstancesUtil;
-import weka.core.DenseInstance;
 import weka.core.Instance;
 import weka.core.Instances;
-
-import java.util.stream.IntStream;
 
 /**
  * A standard Label flipping attack that cycles the class values:
@@ -17,7 +12,7 @@ import java.util.stream.IntStream;
  * C → A
  */
 @Slf4j
-public class LabelFlipping extends Attack{
+public class LabelFlipping extends HorizontalAttack {
 
     public LabelFlipping(Instances target) {
         super(target);
@@ -28,22 +23,14 @@ public class LabelFlipping extends Attack{
     }
 
     @Override
-    public Instances attack() {
-        Instances perturbedInstances = new Instances(getTarget());
+    protected void horizontalDisrupt(Instance instance) {
+        int classValuesNumber = instance.numClasses();
+        double newClassValue = ( instance.classValue() + 1 ) % classValuesNumber;
 
-        IntStream.range(0, attackSize()).parallel().forEach(i -> {
-            Instance instance = perturbedInstances.instance(i);
-            int classValuesNumber = instance.numClasses();
-            double newClassValue = ( instance.classValue() + 1 ) % classValuesNumber;
+        if(newClassValue >= classValuesNumber){
+            log.error("Invalid class value: " + newClassValue);
+        }
 
-            if(newClassValue >= classValuesNumber){
-                log.error("Invalid class value: " + newClassValue);
-            }
-
-            instance.setClassValue(newClassValue);
-            perturbedInstances.set(i, instance);
-        });
-
-        return perturbedInstances;
+        instance.setClassValue(newClassValue);
     }
 }
