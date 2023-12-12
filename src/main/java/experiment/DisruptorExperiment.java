@@ -297,25 +297,21 @@ public class DisruptorExperiment {
         String columnName = "";
         int columnsSpan = 2; //Number of columns of the matrix used by the datasets. It's 2 only for the base dataset (the first). FOR THE OTHERS IS 3
 
-        StringWriter sw = new StringWriter();
-        CSVFormat csvFormat = CSVFormat.DEFAULT.builder()
-                .setHeader("dataset", "classifier", "correctness", "stDev", "v/ /*")
-                .build();
-
+        FileWriter fileWriter;
         final CSVPrinter printer;
         try {
-            printer = new CSVPrinter(sw, csvFormat);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+            fileWriter = new FileWriter(experimentFolderName+"/CSVoutput.csv", true);
+            CSVFormat csvFormat = CSVFormat.DEFAULT.builder()
+                    .setHeader("dataset", "classifier", "correctness", "stDev", "v/ /*")
+                    .build();
 
-        for (int c = 1; c < matrixArray[0].length; c+=columnsSpan) {
-            columnName = matrixArray[0][c].equals("") ? columnName : matrixArray[0][c]; // for the columns without a name use the previous name
+            printer = new CSVPrinter(fileWriter, csvFormat);
 
-            for (int r = 1; r < matrixArray.length; r++) {
-                String rowName = matrixArray[r][0];
-                try {
+            for (int c = 1; c < matrixArray[0].length; c+=columnsSpan) {
+                columnName = matrixArray[0][c].equals("") ? columnName : matrixArray[0][c]; // for the columns without a name use the previous name
 
+                for (int r = 1; r < matrixArray.length; r++) {
+                    String rowName = matrixArray[r][0];
                     String evaluation;
                     if(c==1){
                         evaluation = "";
@@ -326,14 +322,15 @@ public class DisruptorExperiment {
                     }
 
                     printer.printRecord(columnName, rowName, matrixArray[r][c], matrixArray[r][c+1], evaluation);
-
-                } catch (IOException e) {
-                    e.printStackTrace();
                 }
-            }
 
+            }
+            fileWriter.flush();
+            fileWriter.close();
+            printer.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
-        log.info("{}", sw.toString().trim());
 
     }
 
