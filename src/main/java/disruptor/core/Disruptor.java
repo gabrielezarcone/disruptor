@@ -40,7 +40,13 @@ import java.util.concurrent.Callable;
 @Slf4j
 @CommandLine.Command(
         name = "disruptor",
-        description = "\nDisrupt the training set of a Machine Learning algorithm useing a set of different attacks.\n",
+        description = "\n" +
+                "  ___ ___ ___ ___ _   _ ___ _____ ___  ___ \n" +
+                " |   \\_ _/ __| _ \\ | | | _ \\_   _/ _ \\| _ \\\n" +
+                " | |) | |\\__ \\   / |_| |  _/ | || (_) |   /\n" +
+                " |___/___|___/_|_\\\\___/|_|   |_| \\___/|_|_\\\n" +
+                "                                           \n" +
+                "\nDisrupt the training set of a Machine Learning algorithm using a set of different attacks.\n",
         versionProvider = DisruptorVersionProvider.class,
         // mixinStandardHelpOptions attribute adds --help and --version options
         mixinStandardHelpOptions = true
@@ -54,8 +60,11 @@ public class Disruptor implements Callable<Integer> {
     private String baseFolderName = "";
     String startDate = "";
     private String experimentFolderName = EXPERIMENT_FOLDER;
+    @Getter
     private ArrayList<Attack> attacksList = new ArrayList<>();
+    @Getter
     private ArrayList<Classifier> classifiersList = new ArrayList<>();
+    @Getter
     private ArrayList<PerturbedDataset> perturbedDatasets = new ArrayList<>();
     ROCDatasetsList perturbedDataMapForROC = new ROCDatasetsList();
     private final Exporter arffExport = new Exporter( new ArffSaver() );
@@ -81,6 +90,7 @@ public class Disruptor implements Callable<Integer> {
 
 
     // CLI PARAMS ---------------------------------------------------------------------------------------------------------------------------
+    @Getter @Setter
     @CommandLine.Parameters(
             index = "0",
             description = "Filepath of the CSV file containing the dataset.\nIt is MANDATORY that the first row of the CSV file should contains the features names.\nUse --arff to pass a .arff file instead\n",
@@ -88,74 +98,84 @@ public class Disruptor implements Callable<Integer> {
     private File datasetFile;
 
     // CLI OPTIONS ---------------------------------------------------------------------------------------------------------------------------
+    @Getter @Setter
     @CommandLine.Option(
             names = {"-a", "--arff"},
             description = "Use this option if the dataset file format is .arff\n",
             paramLabel = "ARFF")
-    private boolean isArff;
+    private boolean isArff = false;
 
+    @Getter @Setter
     @CommandLine.Option(
             names = {"-c", "--class"},
             description= "Specify the class attribute name.\nIf this param is not set, the program use “class” as the class attribute name\nDefault: class\n",
             paramLabel="CLASS",
             defaultValue="class")
-    private String className;
+    private String className = "class";
 
+    @Getter @Setter
     @CommandLine.Option(
             names = {"-C", "--capacities"},
             description= "Comma-separated capacities for the attacks.\nThe capacity is a percentage between 0 and 1.\ne.g. -C 0.2,0.5,1\nDefault: 1\n",
             paramLabel="CAPACITY",
             defaultValue="1",
             split = "," )
-    private ArrayList<Double> capacitiesList = new ArrayList<>();
+    private ArrayList<Double> capacitiesList = new ArrayList<>(Collections.singletonList(1d));
 
+    @Getter @Setter
     @CommandLine.Option(
             names = {"-F", "--features-capacities"},
             description= "Comma-separated capacities for the attacks.\nThe capacity is a percentage between 0 and 1.\ne.g. -C 0.2,0.5,1\nDefault: 1\n",
             paramLabel="FEATURES_CAPACITY",
             defaultValue="1",
             split = "," )
-    private ArrayList<Double> featuresCapacitiesList = new ArrayList<>();
+    private ArrayList<Double> featuresCapacitiesList = new ArrayList<>(Collections.singletonList(1d));
 
+    @Getter @Setter
     @CommandLine.Option(
             names = {"-K", "--knowledge"},
             description= "Comma-separated knowledge for the attacks.\nThe knowledge is a percentage between 0 and 1.\ne.g. -K 0.2,0.5,1\nDefault: 1\n",
             paramLabel="KNOWLEDGE",
             defaultValue="1",
             split = "," )
-    private ArrayList<Double> knowledgeList = new ArrayList<>();
+    private ArrayList<Double> knowledgeList = new ArrayList<>(Collections.singletonList(1d));
 
+    @Getter @Setter
     @CommandLine.Option(
             names = {"-t", "--train-percent"},
             description= "Percentage of the training set.\nSet to 1 if they want to use all the dataset as training set \nThe percentage is a number between 0 and 1.\nDefault: 0.8\n",
             paramLabel="TRAIN_PERCENTAGE",
             defaultValue="0.8" )
-    private double trainPercentage;
+    private double trainPercentage = 0.8;
 
-    @CommandLine.Option(
-            names = {"-b", "--balance"},
-            description = "Perform other 2 run of the attacks on balanced dataset\nIn the first additional run, the instances are balanced with Resample.\nFor the second run is used SMOTE instead\n",
-            paramLabel = "BALANCE")
+//    @Getter @Setter
+//    @CommandLine.Option(
+//            names = {"-b", "--balance"},
+//            description = "Perform other 2 run of the attacks on balanced dataset\nIn the first additional run, the instances are balanced with Resample.\nFor the second run is used SMOTE instead\n",
+//            paramLabel = "BALANCE")
     private boolean toBalance;
 
+    @Getter @Setter
     @CommandLine.Option(
             names = {"-e", "--experimenter"},
             description = "Evaluate the effectiveness of the attacks using several ML algorithms\n",
             paramLabel = "EXP")
-    private boolean experimenter;
+    private boolean experimenter = false;
 
-    @CommandLine.Option(
-            names = {"-r", "--roc"},
-            description = "Show the ROC curves for each attack\n",
-            paramLabel = "ROC")
+//    @Getter @Setter
+//    @CommandLine.Option(
+//            names = {"-r", "--roc"},
+//            description = "Show the ROC curves for each attack\n",
+//            paramLabel = "ROC")
     private static boolean roc;
 
+    @Getter @Setter
     @CommandLine.Option(
             names = {"-R", "--runs"},
             description = "Define the number of runs for each attack\nDefault: 10\n",
             paramLabel = "NUMBER_OF_RUNS",
             defaultValue="10")
-    private static int runs;
+    private static int runs = 10;
 
 
     public static void main(String[] args) {
