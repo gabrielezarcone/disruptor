@@ -434,13 +434,13 @@ public class Disruptor implements Callable<Integer> {
                         perturbedDatasets.add(perturbedDatasetObject);
                     }
                     if(roc){
-                        try {
-                            perturbedDataMapForROC.addWithCapacity(attackName, capacity, featureCapacity, perturbedInstances);
-                        } catch (Exception e) {
-                            log.error("Problem storing the perturbed dataset for the ROC curve");
-                            log.debug(attackCode);
-                            ExceptionUtil.logException(e, log);
-                        }
+//                        try {
+//                            perturbedDataMapForROC.addWithCapacity(attackName, capacity, featureCapacity, perturbedInstances);
+//                        } catch (Exception e) {
+//                            log.error("Problem storing the perturbed dataset for the ROC curve");
+//                            log.debug(attackCode);
+//                            ExceptionUtil.logException(e, log);
+//                        }
                     }
 
                     // Export the perturbed instances
