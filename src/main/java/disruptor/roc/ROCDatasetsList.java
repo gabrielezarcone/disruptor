@@ -6,6 +6,7 @@ import lombok.EqualsAndHashCode;
 import weka.core.Instances;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 public class ROCDatasetsList {
