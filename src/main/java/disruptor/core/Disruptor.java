@@ -207,6 +207,7 @@ public class Disruptor implements Callable<Integer> {
             arffExport.exportInFolder( dataset, baseFolderName, dataset.relationName() );
         }
 
+        featureSelectionAlgorithms.clear();
         populateFeatureSelectionAlgorithmsList( dataset );
         performFeatureSelection();
 
@@ -306,7 +307,9 @@ public class Disruptor implements Callable<Integer> {
         exportTestSet(testSet);
 
         // Populate the attacks and the classifiers lists
+        attacksList.clear();
         populateAttacksList(trainset, selectedFeatureMap.get(attributeSelectorAlgorithm));
+        classifiersList.clear();
         populateClassifiersList();
 
         // Attack main loop
@@ -345,8 +348,7 @@ public class Disruptor implements Callable<Integer> {
      * @param dataset dataset to perturbate during the attacks
      * @param selectedFeatures features to perturbate during the attacks
      */
-    private void populateAttacksList(Instances dataset, double[][] selectedFeatures) {
-        attacksList.clear();
+    protected void populateAttacksList(Instances dataset, double[][] selectedFeatures) {
 
         attacksList.add(new LabelFlipping(dataset));
         attacksList.add(new RandomLabelFlipping(dataset));
@@ -382,8 +384,7 @@ public class Disruptor implements Callable<Integer> {
     /**
      * Fill the classifiers list with a subset of classifiers
      */
-    private void populateClassifiersList() {
-        classifiersList.clear();
+    protected void populateClassifiersList() {
         classifiersList.add( new J48() );
         classifiersList.add( new SMO());
         classifiersList.add( new JRip() );
@@ -538,8 +539,7 @@ public class Disruptor implements Callable<Integer> {
      * Populate the list of feature selection algorithms
      * @param dataset dataset on which the feature selection is performed
      */
-    public void populateFeatureSelectionAlgorithmsList(Instances dataset){
-        featureSelectionAlgorithms.clear();
+    protected void populateFeatureSelectionAlgorithmsList(Instances dataset){
         featureSelectionAlgorithms.add(new InfoGainEval(dataset));
         featureSelectionAlgorithms.add(new RandomSelector(dataset));
 
