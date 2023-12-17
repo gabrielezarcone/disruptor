@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>gzarcone</groupId>
+    <artifactId>disruptor</artifactId>
+    <version>1.0.0</version>
+
+    <properties>
+        <disruptor.version>${project.version}</disruptor.version>
+        <merge-experimenter-arff.version>1.0.1</merge-experimenter-arff.version>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
+        <spring-boot-maven-plugin.version>2.7.10</spring-boot-maven-plugin.version>
+        <weka-stable.version>3.8.6</weka-stable.version>
+        <lombok.version>1.18.26</lombok.version>
+        <picocli.version>4.7.1</picocli.version>
+        <properties-maven-plugin.version>1.1.0</properties-maven-plugin.version>
+        <junit-jupiter.version>5.9.2</junit-jupiter.version>
+        <logback-core.version>1.3.7</logback-core.version>
+        <logback-classic.version>1.3.7</logback-classic.version>
+        <slf4j-api.version>2.0.4</slf4j-api.version>
+    </properties>
+
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>Github maven package</name>
+            <url>https://maven.pkg.github.com/gabrielezarcone/disruptor</url>
+        </repository>
+    </distributionManagement>
+
+    <dependencies>
+
+        <!-- Weka -->
+        <dependency>
+            <groupId>nz.ac.waikato.cms.weka</groupId>
+            <artifactId>weka-stable</artifactId>
+            <version>${weka-stable.version}</version>
+        </dependency>
+
+        <!-- Weka SMOTE -->
+        <dependency>
+            <groupId>nz.ac.waikato.cms.weka</groupId>
+            <artifactId>SMOTE</artifactId>
+            <version>1.0.3</version>
+        </dependency>
+
+        <!-- Lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Picocli -->
+        <!-- Helper for creating a CLI application -->
+        <dependency>
+            <groupId>info.picocli</groupId>
+            <artifactId>picocli</artifactId>
+            <version>${picocli.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${junit-jupiter.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Logback -->
+        <!-- Logging framework -->
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-core</artifactId>
+            <version>${logback-core.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${logback-classic.version}</version>
+        </dependency>
+
+        <!-- Apache commons CSV -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-csv</artifactId>
+            <version>1.10.0</version>
+        </dependency>
+
+
+
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!-- Spring Boot Maven Plugin -->
+            <!-- used to build jar files of the specified main classes using maven -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${spring-boot-maven-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>Pack Disruptor application</id>
+                        <phase>package</phase>
+                        <configuration>
+                            <finalName>disruptor</finalName>
+                            <mainClass>disruptor.core.Disruptor</mainClass>
+                            <outputDirectory>target/deploy/disruptor</outputDirectory>
+                            <classifier>${project.version}</classifier>
+                        </configuration>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>Pack MergeExperimenterArff application</id>
+                        <phase>package</phase>
+                        <configuration>
+                            <finalName>merge-experimenter-arff</finalName>
+                            <mainClass>disruptor.core.MergeExperimenterArff</mainClass>
+                            <outputDirectory>target/deploy/merge-experimenter-arff</outputDirectory>
+                            <classifier>${merge-experimenter-arff.version}</classifier>
+                        </configuration>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- plugin useful to copy all the pom.xml properties in a .properties file reachable at runtime by java -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>properties-maven-plugin</artifactId>
+                <version>${properties-maven-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>write-project-properties</goal>
+                        </goals>
+                        <configuration>
+                            <outputFile>${project.basedir}/src/main/resources/pom.properties</outputFile>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+        </plugins>
+    </build>
+
+</project>
