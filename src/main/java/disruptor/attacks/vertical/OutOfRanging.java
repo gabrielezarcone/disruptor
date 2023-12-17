@@ -50,7 +50,7 @@ public class OutOfRanging extends Attack {
                 double randomValueOutOfRange;
                 do {
                     randomValueOutOfRange = random.nextDouble();
-                }while ( !range.contains(randomValueOutOfRange));
+                }while ( range.contains(randomValueOutOfRange));
 
                 instanceToAttack.setValue(feature, randomValueOutOfRange);
 
