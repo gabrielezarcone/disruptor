@@ -93,7 +93,7 @@ public class Disruptor implements Callable<Integer> {
     @Getter @Setter
     @CommandLine.Parameters(
             index = "0",
-            description = "Filepath of the CSV file containing the dataset.\nIt is MANDATORY that the first row of the CSV file should contains the features names.\nUse --arff to pass a .arff file instead\n",
+            description = "Filepath of the CSV file containing the dataset.\nIt is MANDATORY that the first row of the CSV file contains the features names.\nUse --arff to pass a .arff file instead\n",
             paramLabel = "DATASET")
     private File datasetFile;
 
@@ -116,7 +116,7 @@ public class Disruptor implements Callable<Integer> {
     @Getter @Setter
     @CommandLine.Option(
             names = {"-C", "--capacities"},
-            description= "Comma-separated capacities for the attacks.\nThe capacity is a percentage between 0 and 1.\ne.g. -C 0.2,0.5,1\nDefault: 1\n",
+            description= "Comma-separated horizontal capacities for the attacks.\nThe capacity is a percentage between 0 and 1.\ne.g. -C 0.2,0.5,1\nDefault: 1\n",
             paramLabel="CAPACITY",
             defaultValue="1",
             split = "," )
@@ -125,7 +125,7 @@ public class Disruptor implements Callable<Integer> {
     @Getter @Setter
     @CommandLine.Option(
             names = {"-F", "--features-capacities"},
-            description= "Comma-separated capacities for the attacks.\nThe capacity is a percentage between 0 and 1.\ne.g. -C 0.2,0.5,1\nDefault: 1\n",
+            description= "Comma-separated vertical capacities for the attacks.\nThe capacity is a percentage between 0 and 1.\ne.g. -C 0.2,0.5,1\nDefault: 1\n",
             paramLabel="FEATURES_CAPACITY",
             defaultValue="1",
             split = "," )
