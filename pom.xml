@@ -6,7 +6,7 @@
 
     <groupId>gzarcone</groupId>
     <artifactId>disruptor</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
 
     <properties>
         <disruptor.version>${project.version}</disruptor.version>

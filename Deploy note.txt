@@ -1,0 +1,54 @@
+=== Deploy della libreria: === === === === === === === === === ===
+    per usare il codice come libreria non è necessario che venga creato un jar che autocontenga tutte le dipendenze.
+    Tale Jar viene generato con il semplice maven package. Il jar generato viene caricato nella pagina Pakages di github
+    visto che è stato aggiunto al pom quanto segue:
+
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>Github maven package</name>
+            <url>https://maven.pkg.github.com/gabrielezarcone/disruptor</url>
+        </repository>
+    </distributionManagement>
+
+    In questo modo quando viene lanciato "mvn deploy" viene anche creato un nuovo package su github.
+    Questo è possibile perchè nel file settings.xml di maven che si trova in .m2 è stato aggiunto:
+
+    <servers>
+        <server>
+            <id>github</id>
+            <username>gabrielezarcone</username>
+            <password>token classico generato dalle impostazioni di github</password>
+        </server>
+    </servers>
+
+=== Deploy dell'app standalone: === === === === === === === === === ===
+    Per utilizzare invece il perturbatore come applicazione standalone viene utilizzato il plugin maven: spring-boot-maven-plugin
+    aggiunto al pom come segue:
+
+    <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <version>${spring-boot-maven-plugin.version}</version>
+        <executions>
+            <execution>
+                <id>Pack Disruptor application</id>
+                <phase>package</phase>
+                <configuration>
+                    <finalName>disruptor</finalName>
+                    <mainClass>disruptor.core.Disruptor</mainClass>
+                    <outputDirectory>target/deploy/disruptor</outputDirectory>
+                    <classifier>${project.version}</classifier>
+                </configuration>
+                <goals>
+                    <goal>repackage</goal>
+                </goals>
+            </execution>
+        </executions>
+    </plugin>
+
+    Questo consente di creare un jar nella cartella target/deploy che contiene tutte le dipendenze e può essere utilizzato come app a se stante.
+    NB: non può essere usato come libreria perchè ha una struttura delle cartelle tipica di Spring e non viene più riconosciuta da maven.
+
+    Per aggiungerlo ad una release su GitHub, dopo che si è fatto git flow relase finish su github viene crerato solo il tag.
+    Da quel tag cliccare "crea release" e in quella pagina aggiungere come file il jar presente in target/deploy
