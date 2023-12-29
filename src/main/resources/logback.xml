@@ -41,7 +41,7 @@
     </appender>
 
 
-    <logger name="experiment" level="INFO">
+    <logger name="disruptor.experiment" level="INFO">
         <appender-ref ref="FILE_EXPERIMENT"/>
     </logger>
 
