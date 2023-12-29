@@ -40,12 +40,7 @@ import java.util.concurrent.Callable;
 @Slf4j
 @CommandLine.Command(
         name = "disruptor",
-        description = "\n" +
-                "  ___ ___ ___ ___ _   _ ___ _____ ___  ___ \n" +
-                " |   \\_ _/ __| _ \\ | | | _ \\_   _/ _ \\| _ \\\n" +
-                " | |) | |\\__ \\   / |_| |  _/ | || (_) |   /\n" +
-                " |___/___|___/_|_\\\\___/|_|   |_| \\___/|_|_\\\n" +
-                "                                           \n" +
+        description = Disruptor.LOGO +
                 "\nDisrupt the training set of a Machine Learning algorithm using a set of different attacks.\n",
         versionProvider = DisruptorVersionProvider.class,
         // mixinStandardHelpOptions attribute adds --help and --version options
@@ -55,6 +50,12 @@ public class Disruptor implements Callable<Integer> {
 
     public static final String PARENT_FOLDER = "output";
     public static final String EXPERIMENT_FOLDER = "experiment";
+    protected static final String LOGO = "\n" +
+            "  ___ ___ ___ ___ _   _ ___ _____ ___  ___ \n" +
+            " |   \\_ _/ __| _ \\ | | | _ \\_   _/ _ \\| _ \\\n" +
+            " | |) | |\\__ \\   / |_| |  _/ | || (_) |   /\n" +
+            " |___/___|___/_|_\\\\___/|_|   |_| \\___/|_|_\\\n" +
+            "                                           \n";
 
     private String runFolderName = PARENT_FOLDER;
     private String baseFolderName = "";
@@ -192,6 +193,8 @@ public class Disruptor implements Callable<Integer> {
 
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HHmmss");
         startDate = simpleDateFormat.format(new Date());
+
+        log.info(LOGO+"\tFILE: "+datasetFile.getName()+"\n\tSTART TIMESTAMP: "+startDate+"\n");
 
         baseFolderName = PARENT_FOLDER
                 + File.separator
