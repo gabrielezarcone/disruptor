@@ -6,9 +6,10 @@
 
     <groupId>gzarcone</groupId>
     <artifactId>disruptor</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
 
     <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <disruptor.version>${project.version}</disruptor.version>
         <merge-experimenter-arff.version>1.0.1</merge-experimenter-arff.version>
         <maven.compiler.source>8</maven.compiler.source>

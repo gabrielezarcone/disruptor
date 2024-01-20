@@ -40,12 +40,7 @@ import java.util.concurrent.Callable;
 @Slf4j
 @CommandLine.Command(
         name = "disruptor",
-        description = "\n" +
-                "  ___ ___ ___ ___ _   _ ___ _____ ___  ___ \n" +
-                " |   \\_ _/ __| _ \\ | | | _ \\_   _/ _ \\| _ \\\n" +
-                " | |) | |\\__ \\   / |_| |  _/ | || (_) |   /\n" +
-                " |___/___|___/_|_\\\\___/|_|   |_| \\___/|_|_\\\n" +
-                "                                           \n" +
+        description = Disruptor.LOGO +
                 "\nDisrupt the training set of a Machine Learning algorithm using a set of different attacks.\n",
         versionProvider = DisruptorVersionProvider.class,
         // mixinStandardHelpOptions attribute adds --help and --version options
@@ -55,6 +50,12 @@ public class Disruptor implements Callable<Integer> {
 
     public static final String PARENT_FOLDER = "output";
     public static final String EXPERIMENT_FOLDER = "experiment";
+    protected static final String LOGO = "\n" +
+            "  ___ ___ ___ ___ _   _ ___ _____ ___  ___ \n" +
+            " |   \\_ _/ __| _ \\ | | | _ \\_   _/ _ \\| _ \\\n" +
+            " | |) | |\\__ \\   / |_| |  _/ | || (_) |   /\n" +
+            " |___/___|___/_|_\\\\___/|_|   |_| \\___/|_|_\\\n" +
+            "                                           \n";
 
     private String runFolderName = PARENT_FOLDER;
     private String baseFolderName = "";
@@ -70,6 +71,8 @@ public class Disruptor implements Callable<Integer> {
     private final Exporter arffExport = new Exporter( new ArffSaver() );
     private final Exporter csvExport = new Exporter( new CSVSaver() );
     private int executionCounter = 0;
+
+    protected enum ExportType {ALL, NONE, ARFF, CSV}
 
     /**
      * List of feature selection algorithms
@@ -177,6 +180,14 @@ public class Disruptor implements Callable<Integer> {
             defaultValue="10")
     private static int runs = 10;
 
+    @Getter @Setter
+    @CommandLine.Option(
+            names = {"-E", "--export"},
+            description = "Valid values: ${COMPLETION-CANDIDATES}\nDefine what kind of export the application should produce.\nIf --experiment is present, this option does not influence the Experimenter exports.",
+            defaultValue="ALL"
+    )
+    private ExportType exportType = ExportType.ALL;
+
 
     public static void main(String[] args) {
         int exitCode = new CommandLine(new Disruptor()).execute(args);
@@ -192,6 +203,8 @@ public class Disruptor implements Callable<Integer> {
 
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HHmmss");
         startDate = simpleDateFormat.format(new Date());
+
+        log.info(LOGO+"\tFILE: "+datasetFile.getName()+"\n\tSTART TIMESTAMP: "+startDate+"\n");
 
         baseFolderName = PARENT_FOLDER
                 + File.separator
@@ -465,24 +478,42 @@ public class Disruptor implements Callable<Integer> {
      * @throws IOException if problems during the export
      */
     private void exportPerturbedDataset(String attackCode, Instances perturbedDataset) throws IOException {
-        // Export ARFF
-        arffExport.exportInFolder( perturbedDataset, runFolderName, attackCode );
-        // Export CSV
-        csvExport.exportInFolder( perturbedDataset, runFolderName, attackCode );
+        if (exportType != ExportType.NONE){
+            if(exportType == ExportType.ARFF || exportType == ExportType.ALL){
+                // Export ARFF
+                arffExport.exportInFolder( perturbedDataset, runFolderName, attackCode );
+            }
+            if(exportType == ExportType.CSV || exportType == ExportType.ALL){
+                // Export CSV
+                csvExport.exportInFolder( perturbedDataset, runFolderName, attackCode );
+            }
+        }
     }
 
     private void exportTestSet(Instances testSet) throws IOException {
-        // Export ARFF
-        arffExport.exportInFolder( testSet, runFolderName, testSet.relationName()+"_TEST" );
-        // Export CSV
-        csvExport.exportInFolder( testSet, runFolderName, testSet.relationName()+"_TEST" );
+        if (exportType != ExportType.NONE){
+            if(exportType == ExportType.ARFF || exportType == ExportType.ALL){
+                // Export ARFF
+                arffExport.exportInFolder( testSet, runFolderName, testSet.relationName()+"_TEST" );
+            }
+            if(exportType == ExportType.CSV || exportType == ExportType.ALL){
+                // Export CSV
+                csvExport.exportInFolder( testSet, runFolderName, testSet.relationName()+"_TEST" );
+            }
+        }
     }
 
     private void exportTrainTestSet(Instances trainTestSet) throws IOException {
-        // Export ARFF
-        arffExport.exportInFolder( trainTestSet, runFolderName + File.separator + "trainTest", trainTestSet.relationName());
-        // Export CSV
-        csvExport.exportInFolder( trainTestSet, runFolderName + File.separator + "trainTest", trainTestSet.relationName() );
+        if (exportType != ExportType.NONE){
+            if(exportType == ExportType.ARFF || exportType == ExportType.ALL){
+                // Export ARFF
+                arffExport.exportInFolder( trainTestSet, runFolderName + File.separator + "trainTest", trainTestSet.relationName());
+            }
+            if(exportType == ExportType.CSV || exportType == ExportType.ALL){
+                // Export CSV
+                csvExport.exportInFolder( trainTestSet, runFolderName + File.separator + "trainTest", trainTestSet.relationName() );
+            }
+        }
     }
 
 
