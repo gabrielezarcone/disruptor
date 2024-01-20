@@ -1,6 +1,6 @@
 # Disruptor
 
-This is an Adversarial Machine Learning tool that can be used to attack a  training set used to build a Machine Learning model. 
+This is an Adversarial Machine Learning tool that can be used to attack a training set used to build a Machine Learning model. Thus, this application can be used to study different attacks and find countermeasures to them. 
 
 To do so, this code already contains some attacks, but the tool is designed to be extended with personal attack implementations.
 
