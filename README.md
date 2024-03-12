@@ -75,3 +75,17 @@ public class NewAttack extends Attack {
     }
 }
 ```
+
+
+## Packages
+- **attacks:** contains classes that can be used to create new attacks and some custom attack implementation
+- **attributeselection:** contains classes used to perform attribute selection
+- **core:** the main package that contains the Disruptor class
+- **costants:** the classes of this package contains constants
+- **experiment:** contains the classes used for the evaluation of the attacks
+- **filters:** wrappers of the Weka filters
+- **perturbeddataset:** business object used to transport perturbed dataset together with attacks metadata
+- **properties:** classes used to generate and fetch properties from config files
+- **roc:** classes used for the ROC curves generation (not working at the moment)
+- **saver:** classes used to save and export files
+- **util:** utility classes
